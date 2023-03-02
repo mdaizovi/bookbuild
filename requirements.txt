@@ -1,0 +1,7 @@
+asgiref==3.6.0
+Django==4.1.7
+django-ordered-model==3.6
+docx2python==2.6.0
+lxml==4.9.2
+python-docx==0.8.11
+sqlparse==0.4.3
