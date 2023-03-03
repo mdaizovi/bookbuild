@@ -39,21 +39,22 @@ class Command(BaseCommand):
         doc_result = docx2python(f"{filepath}")
         body = [x.strip() for x in doc_result.body[0][0][0] if len(x)>1]
         #print(body)
-        section, _  = Section.objects.get_or_create(title=body[0])
-        print(f"{section}")
+        section_title = body[0]
+        section, _  = Section.objects.get_or_create(title=section_title)
+        #print(f"{section}")
         if not dryrun:
             section.save()
 
 
         titles = {body.index(x): x for x in body if "[" in x and "]" in x}
-        #print(titles)
+        print(titles)
         sorted = list(titles.keys())
         sorted.sort()
         sorted_titles = OrderedDict()
         for t in sorted:
             sorted_titles[t] = titles.get(t)
         #print(sorted)    
-        #print(sorted_titles)
+        print(sorted_titles)
 
         i = 0
         #for element in body[1:20]:
@@ -66,32 +67,45 @@ class Command(BaseCommand):
                 else:
                     this_sorted_index = sorted.index(i)
                     next_index = sorted[this_sorted_index+1]
-                #print(f"next: {next_index}")
+                if i == sorted[0]:
+                    previous_index = None
+                else:
+                    previous_index = sorted[this_sorted_index-1]
+                # print(f"next: {next_index}")
+                # print(f"previous: {previous_index}")
                 if next_index:
                     this_section = body[i:next_index]
                 else:
                     this_section = body[i:]
-                #print(f"this_section: {this_section}")
-
-                #TODO how to get nxt category?
-                # if i == sorted[0]:
-                #     previous_index = None
-                # else:
-                #     this_sorted_index = sorted.index(i)
-                #     previous_index = sorted[this_sorted_index-1]
-
-
-
-
-
-                possible_category_title = body[i-2]
-                possible_category_body = body[i-1]
-                if "href" not in possible_category_body and "href" not in possible_category_title:
-                    category, _  = Category.objects.get_or_create(title=possible_category_title, main_text=possible_category_body)
+                
+                category_title = None 
+                category_body= None
+                if previous_index:
+                    previous_section = body[previous_index:i]
+                    # print("previous_section")
+                    # print(previous_section)
+                    if section_title in previous_section:
+                        title_position = previous_section.index(section_title)
+                        category_title = previous_section[title_position+1]
+                        category_body = previous_section[title_position+2:]
+                else:
+                    category_title = body[1]
+                    category_body = body[2:i]
+                if category_title and category_body:
+                    category, _  = Category.objects.get_or_create(title=category_title, main_text=category_body)
                     if not dryrun:
                         category.save()          
                     print(f"\n---------\n{category}\n---------")
                     print(f"{category.main_text}")
+
+                # possible_category_title = body[i-2]
+                # possible_category_body = body[i-1]
+                # if "href" not in possible_category_body and "href" not in possible_category_title:
+                #     category, _  = Category.objects.get_or_create(title=possible_category_title, main_text=possible_category_body)
+                #     if not dryrun:
+                #         category.save()          
+                #     print(f"\n---------\n{category}\n---------")
+                #     print(f"{category.main_text}")
                 
                 title_list = sorted_titles.get(i).split('[')
                 blob_title = title_list[0]
@@ -100,7 +114,7 @@ class Command(BaseCommand):
                 neighborhood, _ = Neighborhood.objects.get_or_create(title=neighborhood_title)
                 if not dryrun:
                     neighborhood.save()  
-                print(f"\n{neighborhood}\n")
+                #print(f"\n{neighborhood}\n")
                 
                 # footer is the first part of this_section thst contains href, until end.
                 hi = -1
@@ -114,18 +128,22 @@ class Command(BaseCommand):
                 main_text = "\n".join(main_text_list)
                 footer_text = "\n".join(footer_text_list)
 
-                blob, _  = Blob.objects.get_or_create(category=category, neighborhood=neighborhood, section=section, 
-                        title = blob_title,
-                        main_text=main_text,
-                        footer_text=footer_text)
+                blob, created  = Blob.objects.get_or_create(title = blob_title)
+                if created:
+                    blob_dict = {'category':category, 'neighborhood':neighborhood, 'section':section, 
+                        'main_text':main_text,'footer_text':footer_text}
+                    for k,v in blob_dict.items():
+                        setattr(blob, k,v)
+                        blob.save()
+
                 if not dryrun:
                     blob.save()           
                 
-                print(f"\n{blob}\n")
+                #print(f"\n{blob}\n")
                 for v in ["category", "neighborhood", "section", "title", "main_text", "footer_text"]:
                     attr = getattr(blob, v)
-                    print(f"{v}: {attr}")
-                print("\n\n")
+                    #print(f"{v}: {attr}")
+                #print("\n\n")
                 
 
 

@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 INSTALLED_APPS += [
+    "django_admin_listfilter_dropdown",
+    "ordered_model"
+]
+INSTALLED_APPS += [
     "importer"
 ]
 
@@ -111,7 +115,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-STATIC_URL = "/static"
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Reminder: edit the files in STATICFILES_DIRS. the ones in static are auto generated.
