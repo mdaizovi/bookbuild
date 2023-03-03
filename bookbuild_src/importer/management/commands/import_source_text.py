@@ -47,14 +47,11 @@ class Command(BaseCommand):
 
 
         titles = {body.index(x): x for x in body if "[" in x and "]" in x}
-        print(titles)
         sorted = list(titles.keys())
         sorted.sort()
         sorted_titles = OrderedDict()
         for t in sorted:
             sorted_titles[t] = titles.get(t)
-        #print(sorted)    
-        print(sorted_titles)
 
         i = 0
         #for element in body[1:20]:
@@ -95,17 +92,8 @@ class Command(BaseCommand):
                     category, _  = Category.objects.get_or_create(title=category_title, main_text=category_body)
                     if not dryrun:
                         category.save()          
-                    print(f"\n---------\n{category}\n---------")
-                    print(f"{category.main_text}")
-
-                # possible_category_title = body[i-2]
-                # possible_category_body = body[i-1]
-                # if "href" not in possible_category_body and "href" not in possible_category_title:
-                #     category, _  = Category.objects.get_or_create(title=possible_category_title, main_text=possible_category_body)
-                #     if not dryrun:
-                #         category.save()          
-                #     print(f"\n---------\n{category}\n---------")
-                #     print(f"{category.main_text}")
+                    # print(f"\n---------\n{category}\n---------")
+                    # print(f"{category.main_text}")
                 
                 title_list = sorted_titles.get(i).split('[')
                 blob_title = title_list[0]

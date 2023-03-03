@@ -15,5 +15,5 @@ db.sqlite3
 .session
 /venv
 Texte-2017/
-/static
-/bookbuild_src/static/
+bookbuild_src/static/
+#bookbuild_src/importer/
