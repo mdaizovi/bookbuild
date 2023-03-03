@@ -16,4 +16,4 @@ db.sqlite3
 /venv
 Texte-2017/
 bookbuild_src/static/
-#bookbuild_src/importer/
+bookbuild_src/importer/
