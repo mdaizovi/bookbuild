@@ -40,7 +40,8 @@ INSTALLED_APPS = [
 ]
 INSTALLED_APPS += [
     "django_admin_listfilter_dropdown",
-    "ordered_model"
+    "ordered_model",
+    'import_export',
 ]
 INSTALLED_APPS += [
     "importer"
