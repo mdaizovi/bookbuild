@@ -45,3 +45,9 @@ class Blob(BaseModel):
     
     soft_delete = models.BooleanField(default=False)
 
+    @property
+    def has_text(self):
+        if self.main_text:
+            return True
+        else:
+            return False
