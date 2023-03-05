@@ -34,12 +34,14 @@ class Blob(BaseModel):
 #class Blob(OrderedModel):
     
     neighborhood = models.ForeignKey(Neighborhood, null = True, blank = True, on_delete=models.SET_NULL)
+
     section = models.ForeignKey(Section, null = True, blank = True, on_delete=models.SET_NULL)
-    category = models.ForeignKey(Category, null = True, blank = True, on_delete=models.SET_NULL)
+    categories = models.ManyToManyField(Category, blank=True, related_name="blob_m2m")
     priority = models.PositiveSmallIntegerField(null = True, blank = True)
     #order_with_respect_to = ('book', 'section','category', 'neighborhood')
    
     main_text = models.TextField(null = True, blank = True)
     footer_text = models.TextField(null = True, blank = True)
-
+    
+    soft_delete = models.BooleanField(default=False)
 
