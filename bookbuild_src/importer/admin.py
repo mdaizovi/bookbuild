@@ -12,7 +12,7 @@ from django_admin_listfilter_dropdown.filters import (
 )
 
 simple_admins = [
-    "Section", "Neighborhood", "Category",
+    "Section",
 
 ]
 for s in simple_admins:
@@ -22,6 +22,38 @@ for s in simple_admins:
         )
     )
 
+
+class CategoryResource(resources.ModelResource):
+    class Meta:
+        model = Category
+        fields = ("title",)
+        export_order = fields
+        skip_unchanged = True
+        report_skipped = True
+        import_id_fields = ("title",)
+
+@admin.register(Category)
+class CategoryAdmin(ImportExportModelAdmin):
+    resource_class = CategoryResource
+
+class NeighborhoodResource(resources.ModelResource):
+    class Meta:
+        model = Neighborhood
+        fields = ("title",)
+        export_order = fields
+        skip_unchanged = True
+        report_skipped = True
+        import_id_fields = ("title",)
+
+@admin.register(Neighborhood)
+class NeighborhoodAdmin(ImportExportModelAdmin):
+# class BlobAdmin(ExportMixin,admin.ModelAdmin):
+    # Note: ExportMixin must be declared first.
+    resource_class = NeighborhoodResource
+    list_display = [
+        "title",
+    ]
+
 class BlobResource(resources.ModelResource):
 
     # categories = fields.Field(
@@ -30,7 +62,7 @@ class BlobResource(resources.ModelResource):
     #     widget=ManyToManyWidget(Category, field='title', separator=';')
     # )
     category = fields.Field(
-        column_name='catgory',
+        column_name='category',
         attribute='category',
         widget=ForeignKeyWidget(Category, field='title'))    
     
@@ -41,10 +73,12 @@ class BlobResource(resources.ModelResource):
 
     class Meta:
         model = Blob
-        fields = ("id","title", "neighborhood", "categories", "priority")
+        fields = ("title", "neighborhood", "category", "priority")
         export_order = fields
         skip_unchanged = True
         report_skipped = True
+        import_id_fields = ("title",)
+        #use_natural_foreign_keys = True
 
 @admin.register(Blob)
 class BlobAdmin(ImportExportModelAdmin):
@@ -57,7 +91,7 @@ class BlobAdmin(ImportExportModelAdmin):
     list_display = [
         "title", "section","neighborhood","priority","has_text","soft_delete"
     ]
-    filter_horizontal = ('categories',)
+    #filter_horizontal = ('categories',)
     list_filter = (
         ("neighborhood", RelatedDropdownFilter),
         ("section", RelatedDropdownFilter),

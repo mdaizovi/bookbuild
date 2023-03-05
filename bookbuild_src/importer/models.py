@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Manager
 #from ordered_model.models import OrderedModel
 
 
@@ -30,14 +31,17 @@ class Neighborhood(BaseModel):
 class Category(BaseModel):
     main_text = models.TextField(null = True, blank = True)
 
+
+class BlobManager(Manager):
+    def get_by_natural_key(self, title):
+        return self.get(title=title)
+    
 class Blob(BaseModel):
 #class Blob(OrderedModel):
     
     neighborhood = models.ForeignKey(Neighborhood, null = True, blank = True, on_delete=models.SET_NULL)
 
     section = models.ForeignKey(Section, null = True, blank = True, on_delete=models.SET_NULL)
-    #TODO delete categories
-    categories = models.ManyToManyField(Category, blank=True, related_name="blob_m2m")
     category = models.ForeignKey(Category, null = True, blank = True, on_delete=models.SET_NULL)
     priority = models.PositiveSmallIntegerField(null = True, blank = True)
     #order_with_respect_to = ('book', 'section','category', 'neighborhood')
@@ -47,9 +51,15 @@ class Blob(BaseModel):
     
     soft_delete = models.BooleanField(default=False)
 
+    objects = BlobManager()
+
     @property
     def has_text(self):
         if self.main_text:
             return True
         else:
             return 
+
+    def natural_key(self):
+        return (self.title,)
+    
