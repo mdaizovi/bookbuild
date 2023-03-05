@@ -36,7 +36,9 @@ class Blob(BaseModel):
     neighborhood = models.ForeignKey(Neighborhood, null = True, blank = True, on_delete=models.SET_NULL)
 
     section = models.ForeignKey(Section, null = True, blank = True, on_delete=models.SET_NULL)
+    #TODO delete categories
     categories = models.ManyToManyField(Category, blank=True, related_name="blob_m2m")
+    category = models.ForeignKey(Category, null = True, blank = True, on_delete=models.SET_NULL)
     priority = models.PositiveSmallIntegerField(null = True, blank = True)
     #order_with_respect_to = ('book', 'section','category', 'neighborhood')
    
@@ -50,4 +52,4 @@ class Blob(BaseModel):
         if self.main_text:
             return True
         else:
-            return False
+            return 

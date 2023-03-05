@@ -24,15 +24,15 @@ for s in simple_admins:
 
 class BlobResource(resources.ModelResource):
 
-    categories = fields.Field(
-        column_name = 'categories',
-        attribute='categories',
-        widget=ManyToManyWidget(Category, field='title', separator=';')
-    )
-    # section = fields.Field(
-    #     column_name='section',
-    #     attribute='section',
-    #     widget=ForeignKeyWidget(Section, field='title'))    
+    # categories = fields.Field(
+    #     column_name = 'categories',
+    #     attribute='categories',
+    #     widget=ManyToManyWidget(Category, field='title', separator=';')
+    # )
+    category = fields.Field(
+        column_name='catgory',
+        attribute='category',
+        widget=ForeignKeyWidget(Category, field='title'))    
     
     neighborhood = fields.Field(
         column_name='neighborhood',
@@ -62,5 +62,5 @@ class BlobAdmin(ImportExportModelAdmin):
         ("neighborhood", RelatedDropdownFilter),
         ("section", RelatedDropdownFilter),
         ("soft_delete", DropdownFilter),
-        ("categories", RelatedDropdownFilter),
+        ("category", RelatedDropdownFilter),
     )
