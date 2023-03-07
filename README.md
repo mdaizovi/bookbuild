@@ -27,7 +27,7 @@ From here, `words that looks like this` are terminal commands
      NOTE TO THE FUTURE: if this does not work, check to ensure that `cffi` is not pinned to a specific verison, in requirements.txt
      As of right now cffi is causing problems between versions of python 3.9 versus 3.10
 
-### If you want same db as what is online:##
+### If you want same db as what is online:
 You'll need to download the db.sqlite from pythonanywhere and put it in 
 `bookbuild/bookbuild_src` on your local environment
 
