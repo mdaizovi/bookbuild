@@ -30,6 +30,7 @@ class Neighborhood(BaseModel):
 #in text file
 class Category(BaseModel):
     main_text = models.TextField(null = True, blank = True)
+    section = models.ForeignKey(Section, null = True, blank = True, on_delete=models.SET_NULL)
 
 
 class BlobManager(Manager):

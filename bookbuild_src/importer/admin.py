@@ -35,6 +35,9 @@ class CategoryResource(resources.ModelResource):
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin):
     resource_class = CategoryResource
+    fields = ("title","section")
+    list_display = fields
+
 
 class NeighborhoodResource(resources.ModelResource):
     class Meta:
