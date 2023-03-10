@@ -11,16 +11,12 @@ from django_admin_listfilter_dropdown.filters import (
     DropdownFilter
 )
 
-simple_admins = [
-    "Section",
 
-]
-for s in simple_admins:
-    exec(
-        "@admin.register({})\nclass {}Admin(admin.ModelAdmin):\n\tsearch_fields = ['title']".format(
-            s, s
-        )
-    )
+@admin.register(Section)
+class SectionAdmin(ImportExportModelAdmin):
+    fields = ("title","order")
+    list_display = fields
+
 
 
 class CategoryResource(resources.ModelResource):
@@ -54,7 +50,7 @@ class NeighborhoodAdmin(ImportExportModelAdmin):
     # Note: ExportMixin must be declared first.
     resource_class = NeighborhoodResource
     list_display = [
-        "title",
+        "title","order"
     ]
 
 class BlobResource(resources.ModelResource):
