@@ -10,6 +10,7 @@ from django.db.models import Manager
 
 class BaseModel(models.Model):
     title =  models.CharField(max_length=200)
+    order = models.PositiveSmallIntegerField(null = True, blank = True)
 
     class Meta:
         abstract = True
@@ -46,7 +47,6 @@ class Blob(BaseModel):
     category = models.ForeignKey(Category, null = True, blank = True, on_delete=models.SET_NULL)
     priority = models.PositiveSmallIntegerField(null = True, blank = True)
     #order_with_respect_to = ('book', 'section','category', 'neighborhood')
-    order = models.PositiveSmallIntegerField(null = True, blank = True)
    
     main_text = models.TextField(null = True, blank = True)
     footer_text = models.TextField(null = True, blank = True)
