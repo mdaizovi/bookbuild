@@ -88,7 +88,7 @@ class BlobAdmin(ImportExportModelAdmin):
     search_fields = ["title", "main_text"]
 
     list_display = [
-        "title", "neighborhood","category", "priority","has_text","soft_delete"
+        "title", "neighborhood","category", "priority","char_count","has_text"
     ]
     #filter_horizontal = ('categories',)
     list_filter = (

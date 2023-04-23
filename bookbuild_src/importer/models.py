@@ -56,6 +56,14 @@ class Blob(BaseModel):
     objects = BlobManager()
 
     @property
+    def char_count(self):
+        target = {1:300, 2:300, 3:300, 4:1000, 5:2000}
+        if self.main_text and self.priority:
+            return f"{len(self.main_text)}/{target[self.priority]}"
+        else:
+            return ""
+
+    @property
     def has_text(self):
         if self.main_text:
             return True
