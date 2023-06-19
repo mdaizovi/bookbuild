@@ -5,7 +5,7 @@ from django.db.models import Manager
 
 #filename is section
 # first word in file is also section
-# next word is ctegory, then blob of text for category, then items within category.
+# next word is category, then blob of text for category, then items within category.
 # Will have a few categories per section.
 
 class BaseModel(models.Model):
@@ -47,7 +47,7 @@ class Blob(BaseModel):
     category = models.ForeignKey(Category, null = True, blank = True, on_delete=models.SET_NULL)
     priority = models.PositiveSmallIntegerField(null = True, blank = True)
     #order_with_respect_to = ('book', 'section','category', 'neighborhood')
-   
+    category_text = models.TextField(null = True, blank = True)
     main_text = models.TextField(null = True, blank = True)
     footer_text = models.TextField(null = True, blank = True)
     

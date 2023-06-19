@@ -31,7 +31,7 @@ class CategoryResource(resources.ModelResource):
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin):
     resource_class = CategoryResource
-    fields = ("title","section")
+    fields = ("title","section", )
     list_display = fields
 
 
@@ -72,7 +72,7 @@ class BlobResource(resources.ModelResource):
 
     class Meta:
         model = Blob
-        fields = ("title", "neighborhood", "category", "priority")
+        fields = ("title", "neighborhood", "category", "category_text", "priority")
         export_order = fields
         skip_unchanged = True
         report_skipped = True
