@@ -11,11 +11,10 @@ from django.core.management.base import BaseCommand
 
 from ...models import Section, Neighborhood, Category, Blob
 
-#python manage.py export_text 
+# python manage.py export_text
+
 
 class Command(BaseCommand):
-
-
     def handle(self, *args, **options):
         kwargs = {}
 
@@ -23,11 +22,17 @@ class Command(BaseCommand):
         filepath = os.path.join(settings.BASE_DIR, "importer", "export", filename)
 
         document = Document()
-        for n in Neighborhood.objects.annotate(blob_count=Count('blob')).filter(blob_count__gte=1).order_by('-blob_count'):
+        for n in (
+            Neighborhood.objects.annotate(blob_count=Count("blob"))
+            .filter(blob_count__gte=1)
+            .order_by("-blob_count")
+        ):
 
             document.add_heading(n.title, 0)
-            cat = OrderedDict({"None":[]})
-            for b in Blob.objects.filter(neighborhood=n, priority__isnull=False).order_by('category__title'):
+            cat = OrderedDict({"None": []})
+            for b in Blob.objects.filter(
+                neighborhood=n, priority__isnull=False
+            ).order_by("category__title"):
                 if not b.category:
                     cat["None"] = [b]
                 elif b.category.title not in cat:
@@ -37,7 +42,9 @@ class Command(BaseCommand):
 
             category_accumulated_priority = {}
             for c, b_list in cat.items():
-                accumulated_priority = sum([x.priority for x in b_list if x.priority is not None])
+                accumulated_priority = sum(
+                    [x.priority for x in b_list if x.priority is not None]
+                )
                 if accumulated_priority in category_accumulated_priority:
                     category_accumulated_priority[accumulated_priority].append(c)
                 else:
@@ -56,13 +63,12 @@ class Command(BaseCommand):
                         b_list.sort(key=lambda x: x.priority, reverse=True)
                         for b in b_list:
                             document.add_heading(b.title, level=4)
-                            #title.add_run('bold').bold = True
+                            # title.add_run('bold').bold = True
                             document.add_paragraph(f"Priority: {str(b.priority)}")
                             document.add_paragraph(b.main_text)
-                            #document.add_paragraph(b.footer_text)
+                            # document.add_paragraph(b.footer_text)
                         document.add_paragraph("----")
 
             document.add_page_break()
 
         document.save(filepath)
-

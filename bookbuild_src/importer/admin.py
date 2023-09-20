@@ -8,15 +8,14 @@ from .models import Section, Neighborhood, Category, Blob
 from django_admin_listfilter_dropdown.filters import (
     RelatedDropdownFilter,
     ChoiceDropdownFilter,
-    DropdownFilter
+    DropdownFilter,
 )
 
 
 @admin.register(Section)
 class SectionAdmin(ImportExportModelAdmin):
-    fields = ("title","order")
+    fields = ("title", "order")
     list_display = fields
-
 
 
 class CategoryResource(resources.ModelResource):
@@ -28,10 +27,14 @@ class CategoryResource(resources.ModelResource):
         report_skipped = True
         import_id_fields = ("title",)
 
+
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin):
     resource_class = CategoryResource
-    fields = ("title","section", )
+    fields = (
+        "title",
+        "section",
+    )
     list_display = fields
 
 
@@ -44,14 +47,14 @@ class NeighborhoodResource(resources.ModelResource):
         report_skipped = True
         import_id_fields = ("title",)
 
+
 @admin.register(Neighborhood)
 class NeighborhoodAdmin(ImportExportModelAdmin):
-# class BlobAdmin(ExportMixin,admin.ModelAdmin):
+    # class BlobAdmin(ExportMixin,admin.ModelAdmin):
     # Note: ExportMixin must be declared first.
     resource_class = NeighborhoodResource
-    list_display = [
-        "title","order"
-    ]
+    list_display = ["title", "order"]
+
 
 class BlobResource(resources.ModelResource):
 
@@ -61,14 +64,16 @@ class BlobResource(resources.ModelResource):
     #     widget=ManyToManyWidget(Category, field='title', separator=';')
     # )
     category = fields.Field(
-        column_name='category',
-        attribute='category',
-        widget=ForeignKeyWidget(Category, field='title'))    
-    
+        column_name="category",
+        attribute="category",
+        widget=ForeignKeyWidget(Category, field="title"),
+    )
+
     neighborhood = fields.Field(
-        column_name='neighborhood',
-        attribute='neighborhood',
-        widget=ForeignKeyWidget(Neighborhood, field='title'))
+        column_name="neighborhood",
+        attribute="neighborhood",
+        widget=ForeignKeyWidget(Neighborhood, field="title"),
+    )
 
     class Meta:
         model = Blob
@@ -77,20 +82,26 @@ class BlobResource(resources.ModelResource):
         skip_unchanged = True
         report_skipped = True
         import_id_fields = ("title",)
-        #use_natural_foreign_keys = True
+        # use_natural_foreign_keys = True
+
 
 @admin.register(Blob)
 class BlobAdmin(ImportExportModelAdmin):
-# class BlobAdmin(ExportMixin,admin.ModelAdmin):
+    # class BlobAdmin(ExportMixin,admin.ModelAdmin):
     # Note: ExportMixin must be declared first.
     resource_class = BlobResource
 
     search_fields = ["title", "main_text"]
 
     list_display = [
-        "title", "neighborhood","category", "priority","char_count","has_text"
+        "title",
+        "neighborhood",
+        "category",
+        "priority",
+        "char_count",
+        "has_text",
     ]
-    #filter_horizontal = ('categories',)
+    # filter_horizontal = ('categories',)
     list_filter = (
         ("neighborhood", RelatedDropdownFilter),
         ("section", RelatedDropdownFilter),

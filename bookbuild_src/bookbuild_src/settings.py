@@ -14,8 +14,10 @@ from pathlib import Path
 
 import os
 import sys
-#https://django-environ.readthedocs.io/en/latest/
+
+# https://django-environ.readthedocs.io/en/latest/
 import environ
+
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
@@ -30,15 +32,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = "django-insecure-pc(artegvh5m-#)6@rq44xny&dcc^5!2-8l*(9h^oij0^9+!x1"
-SECRET_KEY = env('SECRET_KEY')
+# SECRET_KEY = "django-insecure-pc(artegvh5m-#)6@rq44xny&dcc^5!2-8l*(9h^oij0^9+!x1"
+SECRET_KEY = env("SECRET_KEY")
 
-ENV_DEV = 'dev'
-ENV_PROD = 'prod'
+ENV_DEV = "dev"
+ENV_PROD = "prod"
 
-ENV_TYPE = env('ENV_TYPE')
+ENV_TYPE = env("ENV_TYPE")
 if not ENV_TYPE in (ENV_DEV, ENV_PROD):
-    raise ImproperlyConfigured('Invalid value for ENV_TYPE.')
+    raise ImproperlyConfigured("Invalid value for ENV_TYPE.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if ENV_TYPE == ENV_DEV else False
@@ -62,15 +64,12 @@ INSTALLED_APPS = [
 INSTALLED_APPS += [
     "django_admin_listfilter_dropdown",
     "ordered_model",
-    'import_export',
-    #TODO: install and add to requirements
-    'storages',
-    'django_cleanup.apps.CleanupConfig',
+    "import_export",
+    # TODO: install and add to requirements
+    "storages",
+    "django_cleanup.apps.CleanupConfig",
 ]
-INSTALLED_APPS += [
-    "importer",
-    "exporter"
-]
+INSTALLED_APPS += ["importer", "exporter"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -150,26 +149,25 @@ STATICFILES_DIRS = ["staticfiles"]
 #      "static", "css", "js", "fonts", "img",
 # ]
 
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = 'bookbuild-assets'
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = "bookbuild-assets"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
 AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
+    "CacheControl": "max-age=86400",
 }
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, "media")
-DEFAULT_FILE_STORAGE = 'bookbuild.storage_backends.MediaStorage'
-  
-    
-AWS_DEFAULT_ACL = None # else you get access denied
+DEFAULT_FILE_STORAGE = "bookbuild.storage_backends.MediaStorage"
+
+
+AWS_DEFAULT_ACL = None  # else you get access denied
 AWS_DEFAULT_ACL = "public-read"
 AWS_BUCKET_ACL = "public-read"
 
-#AWS_LOCATION = 'static'
-#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-#STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') if ENV_TYPE == ENV_DEV else None
-
+# AWS_LOCATION = 'static'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+MEDIA_ROOT = os.path.join(BASE_DIR, "media") if ENV_TYPE == ENV_DEV else None
 
 
 # Default primary key field type
