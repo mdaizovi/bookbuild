@@ -1,0 +1,33 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Resources</title>
+    {{ CSS_SNIPPET|safe }}
+  </head>
+
+  <body>
+    <p class="Chapter-Title">CONTENTS</p>
+
+    {% for key, value in chapters.items %}
+
+      <p class="bm-title2"><a href = "{{key.chapter_url}}">{{key.title|upper}}</a></p>
+        {%for r in value %}
+            <p class = "content-recipe-title">
+              <a href = "{{r.internal_url}}">
+              {{r.title|safe}}
+            </a>
+            </p>
+          {%endfor%}
+
+      {% endfor %}
+
+
+<div class = "page"></div>
+
+      <!-- <div class = "page"></div>
+      <p class="page1 cntr no-margin">
+        <img class = "bkg-img" alt="" src="images/Hummus02459.JPG"/>
+      </p> -->
+
+  </body>
+</html>

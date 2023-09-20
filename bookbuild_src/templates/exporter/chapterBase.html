@@ -1,0 +1,18 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>{{ book.title|safe }}</title>
+    {{ CSS_SNIPPET|safe }}
+    <!-- <meta content="urn:uuid:" name="Adept.expected.resource"/> -->
+  </head>
+
+  <body>
+    {% if chapter.display_title %}
+      <p class="bm-title">
+        <span class="line">{{ chapter.title|safe }}</span>
+      </p>
+      <hr>
+    {% endif %}
+    {{ chapter.bodyText|safe }}
+  </body>
+</html>
