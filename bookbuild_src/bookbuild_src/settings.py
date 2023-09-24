@@ -32,7 +32,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = "django-insecure-pc(artegvh5m-#)6@rq44xny&dcc^5!2-8l*(9h^oij0^9+!x1"
 SECRET_KEY = env("SECRET_KEY")
 
 ENV_DEV = "dev"
@@ -65,7 +64,6 @@ INSTALLED_APPS += [
     "django_admin_listfilter_dropdown",
     "ordered_model",
     "import_export",
-    # TODO: install and add to requirements
     "storages",
     "django_cleanup.apps.CleanupConfig",
 ]
