@@ -1,0 +1,76 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+  <title>{{ book.title|safe }}</title>
+  {{ CSS_SNIPPET|safe }}
+  <!-- <meta content="urn:uuid:" name="Adept.expected.resource"/> -->
+</head>
+
+<body>
+<p class="bm-title1">CONTRIBUTORS</p>
+
+<p class="bm-title"><span class="en_yellow bottom-line">RECIPES &amp; CONTENT</span></p>
+
+{% for c in contributers %}
+    <span class="anchor" id="contributor-{{c.pk}}"></span>
+      <p class="bm-noindent">
+        <span class="bentonsas-bold">
+          {%if c.url%}
+            <a href = "{{c.url}}">{{c|safe}}</a>
+          {%else%}
+            {{c|safe}}
+          {%endif%}
+        </span> {{c.description|safe}}</p>
+
+{%if c.facebook or c.instagram or c.twitter or c.youtube%}
+
+    <table class = "bottom-line-light">
+      <tr>
+
+          {%if c.facebook %}
+          <td class = "icon-table">
+            <a class = "icon-table" href = "{{c.facebook}}" target = "_blank">
+              <img class = "icon-table" src="images/facebook.jpg"/><br>
+              <span class = "icon-table">Facebook</span>
+              </a>
+            </td>
+          {% endif %}
+
+          {%if c.instagram %}
+          <td class = "icon-table">
+          <a class = "icon-table" href = "{{c.instagram}}" target = "_blank">
+            <img class = "icon-table" src="images/instagram.jpg"/><br>
+            <span class = "icon-table">Instagram</span>
+          </a>
+          </td>
+          {% endif %}
+
+          {%if c.twitter %}
+          <td class = "icon-table">
+            <a class = "icon-table" href = "{{c.twitter}}" target = "_blank">
+                <img class = "icon-table" src="images/twitter.jpg"/><br>
+                <span class = "icon-table">Twitter</span>
+              </a>
+            </td>
+          {% endif %}
+
+          {%if c.youtube %}
+            <td class = "icon-table">
+            <a class = "icon-table" href = "{{c.youtube}}" target = "_blank">
+              <img class = "icon-table" src="images/youtube.jpg"/><br>
+                <span class = "icon-table">Youtube</span>
+            </a>
+            </td>
+          {% endif %}
+
+    </table>
+
+{% else %}
+<p class = "bottom-line-light"></p>
+{%endif%}
+
+
+{%endfor%}
+
+</body>
+</html>

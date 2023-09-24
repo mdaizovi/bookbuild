@@ -1,0 +1,18 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>{{ book.title|safe }}</title>
+    {{ CSS_SNIPPET|safe }}
+    <!-- <meta content="urn:uuid:" name="Adept.expected.resource"/> -->
+  </head>
+
+  <body>
+    <p class="cover"><img class = "full-page-img" alt="image" src=
+    {% if  book.cover %}
+      "{{ book.cover.relative_url }}"
+    {% else %}
+      "images/cover.jpg"
+    {% endif %}
+    /></p>
+  </body>
+</html>
