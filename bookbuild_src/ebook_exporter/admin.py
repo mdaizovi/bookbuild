@@ -16,10 +16,10 @@ from .models import Author, Contributor, Book, Chapter, Image, StaticFile
 # ===============================================================================
 class ImageAdmin(admin.ModelAdmin):
 
-    list_display = ("credit", "image_tag", "permission")
+    list_display = ("credit", "image_tag")
     search_fields = ("caption", "credit__lname", "credit__fname")
-    list_filter = ("credit", "permission", "needsCitation")
-    fields = (("caption"), ("permission", "credit"), "img", "image_tag")
+    list_filter = ("credit", "needsCitation")
+    fields = (("caption"), "credit", "img", "image_tag")
     readonly_fields = ["image_tag"]
 
 
