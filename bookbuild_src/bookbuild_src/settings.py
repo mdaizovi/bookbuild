@@ -143,9 +143,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Reminder: edit the files in STATICFILES_DIRS. the ones in static are auto generated.
 STATICFILES_DIRS = ["staticfiles"]
-# STATICFILES_DIRS = [
-#      "static", "css", "js", "fonts", "img",
-# ]
 
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
@@ -161,9 +158,9 @@ AWS_DEFAULT_ACL = None  # else you get access denied
 AWS_DEFAULT_ACL = "public-read"
 AWS_BUCKET_ACL = "public-read"
 
-AWS_LOCATION = 'static'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+# AWS_LOCATION = 'static'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 MEDIA_ROOT = os.path.join(BASE_DIR, "media") if ENV_TYPE == ENV_DEV else None
 
 

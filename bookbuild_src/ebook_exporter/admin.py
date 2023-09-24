@@ -11,15 +11,15 @@ from django_admin_listfilter_dropdown.filters import (
 # from django.utils.safestring import mark_safe
 from ordered_model.admin import OrderedModelAdmin
 
-from .models import Author, Contributor, Book, Chapter, Image, StaticFile
+from .models import Author, Book, Chapter, Image, StaticFile
 
 # ===============================================================================
 class ImageAdmin(admin.ModelAdmin):
 
-    list_display = ("credit", "image_tag")
-    search_fields = ("caption", "credit__lname", "credit__fname")
-    list_filter = ("credit", "needsCitation")
-    fields = (("caption"), "credit", "img", "image_tag")
+    list_display = ("image_tag",)
+    search_fields = ("caption",)
+    list_filter = ("needsCitation",)
+    fields = (("caption"), "img", "image_tag")
     readonly_fields = ["image_tag"]
 
 
@@ -45,10 +45,10 @@ class ChapterAdmin(admin.ModelAdmin):
 # ===============================================================================
 
 admin.site.register(Author)
-admin.site.register(Contributor)
 admin.site.register(Book)
 admin.site.register(Chapter, ChapterAdmin)
 admin.site.register(StaticFile)
 admin.site.register(Image, ImageAdmin)
+# admin.site.register(Contributor)
 # admin.site.register(Section)
 # admin.site.register(Subsection, SubsectionAdmin)

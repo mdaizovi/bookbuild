@@ -10,8 +10,7 @@ from collections import OrderedDict
 from django.conf import settings
 from django.template import Context, Template
 
-from .models import Book, Chapter, Contributor, Image
-# from .models import Book, Chapter, Contributor, Image, Subsection, Section
+from .models import Book, Chapter, Image
 
 """The code that actually builds the book.
 """

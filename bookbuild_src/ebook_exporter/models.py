@@ -62,13 +62,6 @@ class Person(models.Model):
     fname = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
-    url = models.URLField(null=True, blank=True)
-    # social media links
-    facebook = models.URLField(null=True, blank=True)
-    instagram = models.URLField(null=True, blank=True)
-    twitter = models.URLField(null=True, blank=True)
-    youtube = models.URLField(null=True, blank=True)
-
     # ---------------------------------------------------------------------------
     def __str__(self):
         if self.fname:
@@ -80,19 +73,6 @@ class Person(models.Model):
     class Meta:
         abstract = True
 
-    # ---------------------------------------------------------------------------
-    @property
-    def credit_contrib_url(self):
-        chap = Chapter.objects.get(title="Contributors")
-        section_url = str(chap.src).replace("OEBPS/", "")
-
-        if self.description:
-            url_str = section_url + "#contributor-" + str(self.pk)
-        else:
-            url_str = section_url + "#photographer-" + str(self.pk)
-
-        return url_str
-
 
 # ===============================================================================
 class Author(Person):
@@ -102,17 +82,6 @@ class Author(Person):
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = ["lname", "order"]
-
-
-# ===============================================================================
-class Contributor(Person):
-    pass
-
-    # ---------------------------------------------------------------------------
-    class Meta:
-        ordering = [
-            "lname",
-        ]
 
 
 # ===============================================================================
@@ -160,9 +129,6 @@ class Image(models.Model):
     caption = models.CharField(max_length=200, null=True, blank=True)
     img = models.ImageField(upload_to=os.path.join("img"))
 
-    credit = models.ForeignKey(
-        Contributor, null=True, blank=True, on_delete=models.PROTECT
-    )
     # does copyright need to be cited? False if free stock image.
     needsCitation = models.BooleanField(default=False)
     # Is it in the book hard-coded? ie does it need tobe copied,
@@ -179,11 +145,7 @@ class Image(models.Model):
     # ---------------------------------------------------------------------------
     def __str__(self):
 
-        if self.credit:
-            strname = "%s: " % (str(self.credit))
-        else:
-            strname = ""
-
+        strname = ""
         try:
             strname += str(self.img.url).split("/img/")[-1]
         except:
@@ -214,10 +176,6 @@ class Image(models.Model):
         return self.img.name.split("/")[-1]
 
     # ---------------------------------------------------------------------------
-    class Meta:
-        ordering = ("credit",)
-
-    # ---------------------------------------------------------------------------
     @property
     def relative_url(self):
         """url to use in ebook.
@@ -237,7 +195,8 @@ class BookManager(models.Manager):
         images = list(book.image_set.all())
         if book.cover:
             images.append(book.cover)
-        for mod in [Subsection, Chapter]:
+        # for mod in [Subsection, Chapter]:
+        for mod in [Chapter]:        
             for obj in mod.objects.filter(book=book):
                 if hasattr(obj, "img") and obj.img:
                     images.append(obj.img)
@@ -250,12 +209,9 @@ class BookManager(models.Manager):
 class Book(models.Model):
     """Should this be ABS or what?
     """
-
-    COOKBOOK = "CK"
     TRAVELGUIDE = "TG"
     NONFICTION = "NF"
     BOOK_TYPE_CHOICES = [
-        (COOKBOOK, "cookbook"),
         (NONFICTION, "nonfiction"),
         (TRAVELGUIDE, "travelguide"),
     ]
