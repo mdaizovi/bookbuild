@@ -2,9 +2,8 @@ import boto3
 import codecs
 import errno
 import os
-import shutil
 import time
-
+from shutil import copy, copytree, ignore_patterns
 from collections import OrderedDict
 
 from django.conf import settings
@@ -18,10 +17,10 @@ from .models import Book, Chapter, Image
 # -------------------------------------------------------------------------------
 def copyanything(src, dst):
     try:
-        shutil.copytree(src, dst)
+        copytree(src, dst, ignore=ignore_patterns('*.DS_Store'))
     except OSError as exc:  # python >2.5
         if exc.errno == errno.ENOTDIR:
-            shutil.copy(src, dst)
+            copy(src, dst)
         else:
             raise
 
@@ -189,22 +188,6 @@ class EbookWriter:
             ctx.update({"chapters": chapters})
             chapter = Chapter.objects.get(book=self.book, title="Contents")
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
-        elif component_type == "contribute":
-            contributers = Book.objects.get_recipe_contributors(self.book)
-            # if len(contributers) > 0:
-            #     ctx.update(
-            #         {
-            #             "contributers": contributers,
-            #             # "photographers": photographers,
-            #             "sections": Section.objects.all().order_by(
-            #                 "chapter__playOrder"
-            #             ),
-            #         }
-            #     )
-            #     chapter = Chapter.objects.get(title="Contributors")
-            #     html_destination = os.path.join(
-            #         self.BOOK_BASE_DIR, "Add2Epub", chapter.src
-            #     )
 
         html_file = os.path.join(*html_path_list)
         if not os.path.exists(html_file):

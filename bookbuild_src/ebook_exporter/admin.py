@@ -45,11 +45,11 @@ class ChapterAdmin(admin.ModelAdmin):
 # ===============================================================================
 
 # These admins should be put back someday
-# admin.site.register(Author)
-# admin.site.register(Book)
-# admin.site.register(Chapter, ChapterAdmin)
-# admin.site.register(StaticFile)
-# admin.site.register(Image, ImageAdmin)
+admin.site.register(Author)
+admin.site.register(Book)
+admin.site.register(Chapter, ChapterAdmin)
+admin.site.register(StaticFile)
+admin.site.register(Image, ImageAdmin)
 
 # These models don't exist right not
 # admin.site.register(Contributor)
