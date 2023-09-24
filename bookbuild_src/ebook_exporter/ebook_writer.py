@@ -10,7 +10,8 @@ from collections import OrderedDict
 from django.conf import settings
 from django.template import Context, Template
 
-from .models import Book, Chapter, Section, Contributor, Subsection, Image
+from .models import Book, Chapter, Contributor, Image
+# from .models import Book, Chapter, Contributor, Image, Subsection, Section
 
 """The code that actually builds the book.
 """
@@ -44,7 +45,7 @@ class EbookWriter:
             get_assets  # whether or not to download images, css, etc from aws
         )
 
-        self.BOOK_BASE_DIR = os.path.join(settings.BASE_DIR, "exporter")
+        self.BOOK_BASE_DIR = os.path.join(settings.BASE_DIR, "ebook_exporter")
         self.DESTINATION_MEDIA_PATH = os.path.join(
             self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", "media"
         )
@@ -136,7 +137,7 @@ class EbookWriter:
         html_path_list = [
             settings.BASE_DIR,
             "templates",
-            "exporter",
+            "ebook_exporter",
             self.book.book_type,
             component_type + "Base.html",
         ]
@@ -150,7 +151,7 @@ class EbookWriter:
                 html_path_list = [
                     settings.BASE_DIR,
                     "templates",
-                    "exporter",
+                    "ebook_exporter",
                     self.book.book_type,
                     "sectionBase.html",
                 ]
@@ -191,20 +192,20 @@ class EbookWriter:
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
         elif component_type == "contribute":
             contributers = Book.objects.get_recipe_contributors(self.book)
-            if len(contributers) > 0:
-                ctx.update(
-                    {
-                        "contributers": contributers,
-                        # "photographers": photographers,
-                        "sections": Section.objects.all().order_by(
-                            "chapter__playOrder"
-                        ),
-                    }
-                )
-                chapter = Chapter.objects.get(title="Contributors")
-                html_destination = os.path.join(
-                    self.BOOK_BASE_DIR, "Add2Epub", chapter.src
-                )
+            # if len(contributers) > 0:
+            #     ctx.update(
+            #         {
+            #             "contributers": contributers,
+            #             # "photographers": photographers,
+            #             "sections": Section.objects.all().order_by(
+            #                 "chapter__playOrder"
+            #             ),
+            #         }
+            #     )
+            #     chapter = Chapter.objects.get(title="Contributors")
+            #     html_destination = os.path.join(
+            #         self.BOOK_BASE_DIR, "Add2Epub", chapter.src
+            #     )
 
         html_file = os.path.join(*html_path_list)
         if not os.path.exists(html_file):
@@ -445,7 +446,7 @@ class EbookWriter:
             if not os.path.exists(DESTINATION_FILE_PATH):
                 os.makedirs(DESTINATION_FILE_PATH)
             local_location = os.path.join(
-                settings.MEDIA_ROOT, "exporter", "static", f.filename
+                settings.MEDIA_ROOT, "ebook_exporter", "static", f.filename
             )
             copyanything(local_location, DESTINATION_FILE_PATH)
 

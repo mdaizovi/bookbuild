@@ -69,7 +69,7 @@ INSTALLED_APPS += [
     "storages",
     "django_cleanup.apps.CleanupConfig",
 ]
-INSTALLED_APPS += ["importer", "exporter"]
+INSTALLED_APPS += ["importer", "ebook_exporter"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

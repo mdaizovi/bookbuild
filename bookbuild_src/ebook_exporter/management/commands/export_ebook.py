@@ -1,8 +1,7 @@
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from bookbuild.models import Book
-from bookbuild.ebook_writer import EbookWriter
+from ...models import Book
+from ...ebook_writer import EbookWriter
 
 # python manage.py export_ebook --book 1
 # or

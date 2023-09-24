@@ -129,11 +129,11 @@ class StaticFile(models.Model):
         (IMG, IMG),
         (CSS, CSS),
     ]
-    # file typw will also be the name of the dir.
+    # file type will also be the name of the dir.
     file_type = models.CharField(
         max_length=200, choices=FILE_TYPE_CHOICES, default="css"
     )
-    upload = models.FileField(upload_to="bookbuild/static/")
+    upload = models.FileField(upload_to="exporter/static/")
 
     # ---------------------------------------------------------------------------
     def __str__(self):
@@ -466,127 +466,127 @@ class Chapter(models.Model):
         super(Chapter, self).save()
 
 
-# ===============================================================================
-class Section(models.Model):
-    """Soups, starts/sides, etc.
-    """
+# # ===============================================================================
+# class Section(models.Model):
+#     """Soups, starts/sides, etc.
+#     """
 
-    title = models.CharField(max_length=200)
-    # Image. Can be blank/null, but I prefer not to.
-    img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
+#     title = models.CharField(max_length=200)
+#     # Image. Can be blank/null, but I prefer not to.
+#     img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
 
-    # Is this related to a chapter in the book?
-    # Section should be a chapter, but chapter might not be a section.
-    chapter = models.OneToOneField(
-        Chapter, on_delete=models.PROTECT, null=True, blank=True
-    )
+#     # Is this related to a chapter in the book?
+#     # Section should be a chapter, but chapter might not be a section.
+#     chapter = models.OneToOneField(
+#         Chapter, on_delete=models.PROTECT, null=True, blank=True
+#     )
 
-    # ---------------------------------------------------------------------------
-    def __str__(self):
-        return "%s" % (self.title)
+#     # ---------------------------------------------------------------------------
+#     def __str__(self):
+#         return "%s" % (self.title)
 
-    # ---------------------------------------------------------------------------
-    class Meta:
-        ordering = [
-            "title",
-        ]
+#     # ---------------------------------------------------------------------------
+#     class Meta:
+#         ordering = [
+#             "title",
+#         ]
 
-    # ---------------------------------------------------------------------------
-    def save(self, *args, **kwargs):
+#     # ---------------------------------------------------------------------------
+#     def save(self, *args, **kwargs):
 
-        if self.chapter:
-            if str(self.chapter.title) != str(self.title):
-                self.chapter.title = self.title
-                self.chapter.save()
+#         if self.chapter:
+#             if str(self.chapter.title) != str(self.title):
+#                 self.chapter.title = self.title
+#                 self.chapter.save()
 
-        super(Section, self).save()
+#         super(Section, self).save()
 
 
-# ===============================================================================
-class Subsection(OrderedModel):
-    """Formerly Recipe"""
+# # ===============================================================================
+# class Subsection(OrderedModel):
+#     """Formerly Recipe"""
 
-    title = models.CharField(max_length=200, blank=True)
-    # If no contributor,is mine. Make sure this is true.
+#     title = models.CharField(max_length=200, blank=True)
+#     # If no contributor,is mine. Make sure this is true.
 
-    # Image. Can be blank/null, but I prefer not to.
-    img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
-    img_lower = models.ForeignKey(
-        Image, null=True, blank=True, related_name="lower", on_delete=models.SET_NULL
-    )
+#     # Image. Can be blank/null, but I prefer not to.
+#     img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
+#     img_lower = models.ForeignKey(
+#         Image, null=True, blank=True, related_name="lower", on_delete=models.SET_NULL
+#     )
 
-    # Note links ot book AND section. redundant, but make sit easier to get. maybe a bad idea.
-    book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
-    section = models.ForeignKey(
-        Section, null=True, blank=True, on_delete=models.SET_NULL
-    )
-    order_with_respect_to = (
-        "book",
-        "section",
-    )
-    halfpage = models.BooleanField(default=False)
+#     # Note links ot book AND section. redundant, but make sit easier to get. maybe a bad idea.
+#     book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
+#     section = models.ForeignKey(
+#         Section, null=True, blank=True, on_delete=models.SET_NULL
+#     )
+#     order_with_respect_to = (
+#         "book",
+#         "section",
+#     )
+#     halfpage = models.BooleanField(default=False)
 
-    # Common Recipe Components
-    text = models.TextField(null=True, blank=True)
+#     # Common Recipe Components
+#     text = models.TextField(null=True, blank=True)
 
-    publish = models.BooleanField(default=True)
+#     publish = models.BooleanField(default=True)
 
-    # ---------------------------------------------------------------------------
-    def download_image(self):
-        if not self.recipe_img_url:
-            print("Can't, no recipe_img_url.")
-            return
-        imagename = self.recipe_img_url.split("/")[-1]
-        print("\n\n---About to get %s for %s" % (str(self.recipe_img_url), str(self)))
-        with open(imagename, "wb") as f:
-            f.write(requests.get(self.recipe_img_url, headers=HEADERS).content)
-            print("downloaded")
-        image = Image()
-        image.img.save(imagename, File(open(imagename, "rb")))
-        image.save()
-        self.img = image
-        self.save()
-        print("saved")
-        if os.path.exists(imagename):
-            os.remove(imagename)
-            print("%s deleted" % imagename)
+#     # ---------------------------------------------------------------------------
+#     def download_image(self):
+#         if not self.recipe_img_url:
+#             print("Can't, no recipe_img_url.")
+#             return
+#         imagename = self.recipe_img_url.split("/")[-1]
+#         print("\n\n---About to get %s for %s" % (str(self.recipe_img_url), str(self)))
+#         with open(imagename, "wb") as f:
+#             f.write(requests.get(self.recipe_img_url, headers=HEADERS).content)
+#             print("downloaded")
+#         image = Image()
+#         image.img.save(imagename, File(open(imagename, "rb")))
+#         image.save()
+#         self.img = image
+#         self.save()
+#         print("saved")
+#         if os.path.exists(imagename):
+#             os.remove(imagename)
+#             print("%s deleted" % imagename)
 
-    # ---------------------------------------------------------------------------
-    def clean_caps(self, fieldname):
-        if hasattr(self, fieldname):
-            dirty = getattr(self, fieldname)
-            textlist = dirty.split()
-            new = []
-            for t in textlist:
-                clean = replace_caps(t)
-                new.append(clean)
-            new_field = " ".join(new)
-            setattr(self, fieldname, new_field)
-            return new_field
-        else:
-            print("no field")
-            # self.save()
+#     # ---------------------------------------------------------------------------
+#     def clean_caps(self, fieldname):
+#         if hasattr(self, fieldname):
+#             dirty = getattr(self, fieldname)
+#             textlist = dirty.split()
+#             new = []
+#             for t in textlist:
+#                 clean = replace_caps(t)
+#                 new.append(clean)
+#             new_field = " ".join(new)
+#             setattr(self, fieldname, new_field)
+#             return new_field
+#         else:
+#             print("no field")
+#             # self.save()
 
-    # ---------------------------------------------------------------------------
-    def __str__(self):
-        return "%s" % (self.title)
+#     # ---------------------------------------------------------------------------
+#     def __str__(self):
+#         return "%s" % (self.title)
 
-    # ---------------------------------------------------------------------------
-    class Meta(OrderedModel.Meta):
-        # ordering = ['title']
-        pass
+#     # ---------------------------------------------------------------------------
+#     class Meta(OrderedModel.Meta):
+#         # ordering = ['title']
+#         pass
 
-    # ---------------------------------------------------------------------------
-    @property
-    def internal_url(self):
-        """Gets link to self in case other recipe wants to link ot it
-        """
-        section_url = str((self.section.chapter.src)).replace("OEBPS/", "")
-        recipe_url = section_url + ("#subsection-" + str(self.pk))
-        return recipe_url
+#     # ---------------------------------------------------------------------------
+#     @property
+#     def internal_url(self):
+#         """Gets link to self in case other recipe wants to link ot it
+#         """
+#         section_url = str((self.section.chapter.src)).replace("OEBPS/", "")
+#         recipe_url = section_url + ("#subsection-" + str(self.pk))
+#         return recipe_url
 
-    # ---------------------------------------------------------------------------
-    def save(self, *args, **kwargs):
-        if not self.book:
-            self.book = Book.objects.get(pk=1)
-        super(Subsection, self).save()
+#     # ---------------------------------------------------------------------------
+#     def save(self, *args, **kwargs):
+#         if not self.book:
+#             self.book = Book.objects.get(pk=1)
+#         super(Subsection, self).save()
