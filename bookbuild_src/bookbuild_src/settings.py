@@ -155,16 +155,15 @@ AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
 }
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, "media")
-DEFAULT_FILE_STORAGE = "bookbuild.storage_backends.MediaStorage"
-
+DEFAULT_FILE_STORAGE = "ebook_exporter.storage_backends.MediaStorage"
 
 AWS_DEFAULT_ACL = None  # else you get access denied
 AWS_DEFAULT_ACL = "public-read"
 AWS_BUCKET_ACL = "public-read"
 
-# AWS_LOCATION = 'static'
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+AWS_LOCATION = 'static'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 MEDIA_ROOT = os.path.join(BASE_DIR, "media") if ENV_TYPE == ENV_DEV else None
 
 
