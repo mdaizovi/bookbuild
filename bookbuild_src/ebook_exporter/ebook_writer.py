@@ -3,7 +3,7 @@ import codecs
 import errno
 import os
 import time
-from shutil import copy, copytree, ignore_patterns
+from shutil import copy, copytree, ignore_patterns, make_archive, rmtree
 from collections import OrderedDict
 
 from django.conf import settings
@@ -141,10 +141,12 @@ class EbookWriter:
         ]
 
         if component_type == "cover":
+            print("writing cover")
             html_destination = os.path.join(
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS/001_cover.html"
             )
         elif component_type == "chapter" and chapter:
+            print("chapter not chapter")
             if hasattr(chapter, "section"):
                 html_path_list = [
                     settings.BASE_DIR,
@@ -162,6 +164,7 @@ class EbookWriter:
                     }
                 )
             else:
+                print("chapter")
                 ctx.update({"chapter": chapter})
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
         elif component_type == "contents":
@@ -275,8 +278,8 @@ class EbookWriter:
         )
 
         # incude cover html
-        opf_str += "<item href='OEBPS/001_cover.html' id='HTML1' media-type='application/xhtml+xml'/>"
-        spinelist.append("HTML1")
+        opf_str += "<item href='OEBPS/001_cover.html' id='HTML0' media-type='application/xhtml+xml'/>"
+        spinelist.append("HTML0")
 
         for c in Chapter.objects.filter(book=self.book, publish=True):
             html_id = "HTML" + str(c.pk)
@@ -356,7 +359,7 @@ class EbookWriter:
             newBookDir = os.path.join(self.BOOK_BASE_DIR, thisTitle)
 
             # 4. compress
-            shutil.make_archive(newBookDir, "zip", book_dir)
+            make_archive(newBookDir, "zip", book_dir)
 
             # 5. then change from zip to epub
             os.rename(
@@ -365,7 +368,7 @@ class EbookWriter:
             )
 
             # 6. remove old folder
-            shutil.rmtree(book_dir)
+            rmtree(book_dir)
 
     # -------------------------------------------------------------------------------
     def cleanUp(self):
@@ -375,13 +378,13 @@ class EbookWriter:
         NOTES:
                 os.remove() will remove a file.
                 os.rmdir() will remove an empty directory.
-                shutil.rmtree() will delete a directory and all its contents.
+                rmtree() will delete a directory and all its contents.
         """
 
         for f in self.FILES_TO_DELETE:
             os.remove(f)
         for f in self.FOLDERS_TO_DELETE:
-            shutil.rmtree(f)
+            rmtree(f)
         print("All cleaned up!")
 
     # -------------------------------------------------------------------------------

@@ -139,6 +139,7 @@ USE_TZ = True
 # STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media") if ENV_TYPE == ENV_DEV else None
 # Reminder: edit the files in STATICFILES_DIRS. the ones in static are auto generated.
 STATICFILES_DIRS = ["staticfiles"]
 
@@ -162,7 +163,6 @@ AWS_BUCKET_ACL = "public-read"
 AWS_LOCATION = 'static'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-MEDIA_ROOT = os.path.join(BASE_DIR, "media") if ENV_TYPE == ENV_DEV else None
 
 
 # Default primary key field type
