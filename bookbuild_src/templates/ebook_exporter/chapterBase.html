@@ -13,6 +13,14 @@
       </p>
       <hr>
     {% endif %}
+
+    {% if chapter.intro %}
+      <p>
+        {{ chapter.intro|safe }}
+      </p>
+      <hr>
+    {% endif %}
+
     {{ chapter.bodyText|safe }}
   </body>
 </html>

@@ -8,108 +8,49 @@
 
 <body>
 
-  <span class="anchor" id="section-{{section.pk}}"></span>
-  <div class="page1"></div>
+  {% if chapter.display_title %}
   <p class="Chapter-Title">
-    <span class="line">{{ section.title }}</span>
+    <span class="line">{{ chapter.title }}</span>
   </p>  
-  <div class="page-end"></div>
+  <hr>
+{% endif %}
 
+{% if chapter.intro %}
+  <p>
+    {{ chapter.intro|safe }}
+  </p>
+  <hr>
+{% endif %}
 
+{% if chapter.bodyText %}
+  <p>
+    {{ chapter.bodyText|safe }}
+  </p>
+  <hr>
+{% endif %}
+  
   <!--<div class="bkg-img"> -->
-  {% for r in recipes %}
-    <span class="anchor" id="recipe-{{r.pk}}"></span>
+  <div>
+  {% for section in sections %}
+    <span class="anchor" id="section-{{section.obj.pk}}"></span>
     
-    {% if r.img and r.img.permission %}
-      <div class="page1">
-        <span class="anchor" id="img-{{r.img.pk}}"></span>
-        <img class = "full-page-img" id="fig-{{ r.img.pk }}" src="{{ r.img.relative_url }}"/>
-
-        <p class="caption">
-          {% if r.img.caption %}
-            {{ r.img.caption }}
-          {% else %}
-            {{ r.title }}
-          {% endif %}
-          
-          {% if r.img.credit and r.img.needsCitation %}
-            image &copy;
-              {% if r.img.credit.id > 1 %}
-                <a href = "{{r.img.credit.credit_contrib_url}}">{{ r.img.credit|safe }}</a>
-              {% else %}
-                {{ r.img.credit|safe }}
-              {% endif %}
-          {% endif %}
-        </p>
-      </div>
-      <div class="page-end"></div>
-    {% endif %}
 
       <!-- Recipe-2-Titlebag used to have pagebreak before and it was causing blank pages between img and title
     so i added div big enough it should warrant own page. see if it worls -->
-    <p class="Recipe-2-Titlebag">{{ r.title|safe }}</p>
-
-    <!-- {% if r.intro %}
-      <div class="Recipe-Intro">
-        {{r.intro|safe}}
-      </div>
-    {% endif %} -->
-    {% if r.contributor %}
-      <div class="Recipe-Intro">
-      <span class = "Recipe-Credit">
-          Contributed by <a href = "{{r.contributor.credit_contrib_url}}">{{r.contributor|safe}}
-          </a></span>
-      {% endif %}
-    </div>
-
-    <div style = "width:100%;">
-      <p class="Recipe-sub1-Title en_yellow bottom-line">INGREDIENTS</p>
-      <div class="Recipe-Ingredients">
-          {% if r.ingredients_html2 %}
-            <div class="Recipe-Ingredients-Left">
-              {{r.ingredients_html|safe}}
-            </div>
-            <div class="Recipe-Ingredients-Right">
-              {{r.ingredients_html2|safe}}
-            </div>
-          {% else %}
-            {{r.ingredients_html|safe}}
-          {% endif %}
-      </div>
-    </div>
-    <div style="clear: both;"></div>
-
-    <div style = "width:100%;">
-      <p class="Recipe-sub1-Title en_yellow bottom-line" style = "margin-top: 0em!important;">DIRECTIONS</p>
-      <div class="Recipe-Steps">{{r.steps_html|safe}}</div>
+    <p class="Recipe-2-Titlebag">{{ section.obj.title|safe }}</p>
+    <p class="Chapter-Title">
+      <span class="line">{{ section.obj.title }}</span>
+    </p>  
     </div>
 
 
-    {% if r.img_lower and r.img_lower.permission %}
-      <div class="div-img-small">
-        <span class="anchor" id="img-{{r.img_lower.pk}}"></span>
-        <center><img class = "small-page-img" id="fig-{{ r.img_lower.pk }}" src="{{ r.img_lower.relative_url }}"/></center>
+    {% for sub in section.subsections %}
+    <p class="Recipe-2-Titlebag">{{ sub.title|safe }}</p>
+    <p>
+      {{ sub.main_text|safe }}
+    </p>
 
-        <p class = "caption">
-          {% if r.img_lower.caption %}
-            {{ r.img_lower.caption }}
-          {% endif %}
-          
-          {% if r.img_lower.credit and r.img_lower.needsCitation %}
-            image &copy;
-              {% if r.img_lower.credit.id > 1 %}
-                <a href = "{{r.img_lower.credit.credit_contrib_url}}">{{ r.img_lower.credit|safe }}</a>
-              {% else %}
-                {{ r.img_lower.credit|safe }}
-              {% endif %}
-          {% endif %}
-        </p>
-      </div>
-    {% endif %}
-
-{% if not r.halfpage %}
-  <div class="page-end"></div>
-{% endif %}
+    {% endfor %}
 
 {% endfor %}
 

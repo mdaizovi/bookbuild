@@ -30,12 +30,22 @@ class ChapterAdmin(admin.ModelAdmin):
     list_filter = (("book", RelatedDropdownFilter),)
 
 # ===============================================================================
+class SectionAdmin(admin.ModelAdmin):
+    list_display = ("title","chapter")
+    list_filter = (("chapter", RelatedDropdownFilter),)
+
+# ===============================================================================
+class SubectionAdmin(admin.ModelAdmin):
+    list_display = ("title","section")
+    list_filter = (("section", RelatedDropdownFilter),)
+
+# ===============================================================================
 
 # These admins should be put back someday
 admin.site.register(Author)
 admin.site.register(Book)
 admin.site.register(Chapter, ChapterAdmin)
-admin.site.register(Section)
+admin.site.register(Section, SectionAdmin)
 admin.site.register(Subsection)
 admin.site.register(StaticFile)
 # admin.site.register(Image, ImageAdmin)

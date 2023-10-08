@@ -146,24 +146,31 @@ class EbookWriter:
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS/001_cover.html"
             )
         elif component_type == "chapter" and chapter:
-            print("chapter not chapter")
-            if hasattr(chapter, "section"):
+            ctx.update({"chapter": chapter})
+            sections = []
+            # print(f"chapter: {chapter}")
+
+            #TODO pre content : what is that, intro?
+
+            #TODO get priority 5 items here
+            if chapter.section_set.all().count()>0:
                 html_path_list = [
-                    settings.BASE_DIR,
-                    "templates",
-                    "ebook_exporter",
-                    self.book.book_type,
-                    "sectionBase.html",
-                ]
-                ctx.update(
-                    {
-                        "section": chapter.section,
-                        "subsections": chapter.section.subsection_set.all().order_by("order"),
-                    }
-                )
-            else:
-                print("chapter")
-                ctx.update({"chapter": chapter})
+                        settings.BASE_DIR,
+                        "templates",
+                        "ebook_exporter",
+                        self.book.book_type,
+                        "sectionBase.html",
+                ]                
+                for section in chapter.section_set.all():
+                    # print(f"section: {section}")
+                    sections.append(
+                        {
+                            "obj": section,
+                            "subsections": [x for x in section.subsection_set.all().order_by("priority", "order")],
+                        }
+                    )
+                ctx.update({"sections":sections})
+                
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
         elif component_type == "contents":
             exclude = ["Title Page", "Copyright", "Contents"]
@@ -174,16 +181,17 @@ class EbookWriter:
             )
             chapters = OrderedDict()
             for c in chapters_all:
-                if hasattr(c, "section"):
-                    chapters.update(
-                        {
-                            c: list(
-                                c.section.subsection_set.all().order_by(
-                                    "order"
+                if c.section_set.all().count()>0:
+                    for section in chapter.section_set.all():
+                        chapters.update(
+                            {
+                                c: list(
+                                    section.subsection_set.all().order_by(
+                                        "order"
+                                    )
                                 )
-                            )
-                        }
-                    )
+                            }
+                        )
                 else:
                     chapters.update({c: []})
             ctx.update({"chapters": chapters})
@@ -440,7 +448,7 @@ class EbookWriter:
             .exclude(title__in=["Contents", "Contributors"])
         ):
             self.writeComponent(component_type="chapter", chapter=c)
-        if self.book.book_type == "CK":
+        if self.book.book_type in ["CK", "TG"]:
             if Chapter.objects.filter(title="Contents", book=self.book).exists():
                 self.writeComponent("contents")
             if Chapter.objects.filter(title="Contributors", book=self.book).exists():
