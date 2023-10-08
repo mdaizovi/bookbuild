@@ -13,9 +13,6 @@ from django.core.files import File
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
-from ordered_model.models import OrderedModel
-
-from importer.models import Chapter
 
 MTDICT = [
     ("jpg", "image/jpeg"),
@@ -332,18 +329,19 @@ class Chapter(models.Model):
         (MEDIA_VND, "application/vnd.ms-opentype"),
     ]
 
-    book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
+    book = models.ForeignKey(Book, on_delete=models.PROTECT)
     # For toc.ncx
     title = models.CharField(max_length=200)
     # subtitle =  models.CharField(max_length=200, null=True, blank=True)
     display_title = models.BooleanField(default=True)
     # navPoint_id =  models.CharField(max_length=200, unique = True)
     playOrder = models.IntegerField(default=2, validators=[MinValueValidator(2)])
+    intro = models.TextField(null=True, blank=True)
 
     # When and where am I going to sync src w/ actual file names?
     # Maybe I'll write something that looks for mismatches? Makes sure all chapters correspond to real files?
     # See if any files can't be found as chapters?
-    src = models.CharField(max_length=200, blank=True)
+    src = models.CharField(max_length=200, null=True, blank=True)
 
     # For content.opf
     media_type = models.CharField(
@@ -439,8 +437,8 @@ class Section(models.Model):
     title = models.CharField(max_length=200)
     order = models.PositiveSmallIntegerField(null=True, blank=True)
     main_text = models.TextField(null=True, blank=True)
-    chapter = models.OneToOneField(
-        Chapter, on_delete=models.PROTECT, null=True, blank=True
+    chapter = models.ForeignKey(
+        Chapter, on_delete=models.PROTECT
     )    
     # Image. Can be blank/null, but I prefer not to.
     #img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
@@ -468,10 +466,9 @@ class Subsection(models.Model):
     title = models.CharField(max_length=200, blank=True)
     order = models.PositiveSmallIntegerField(null=True, blank=True)
     section = models.ForeignKey(
-        Section, null=True, blank=True, on_delete=models.SET_NULL
+        Section, on_delete=models.PROTECT
     )
     priority = models.PositiveSmallIntegerField(null=True, blank=True)
-    # order_with_respect_to = ('book', 'section','category', 'neighborhood')
     category_text = models.CharField(null=True, blank=True, max_length=200)
     main_text = models.TextField(null=True, blank=True)
     footer_text = models.TextField(null=True, blank=True)

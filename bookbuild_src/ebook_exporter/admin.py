@@ -11,7 +11,7 @@ from django_admin_listfilter_dropdown.filters import (
 # from django.utils.safestring import mark_safe
 from ordered_model.admin import OrderedModelAdmin
 
-from .models import Author, Book, Chapter, Image, StaticFile
+from .models import Author, Book, Chapter, Image, StaticFile, Section, Subsection
 
 # ===============================================================================
 class ImageAdmin(admin.ModelAdmin):
@@ -26,21 +26,8 @@ class ImageAdmin(admin.ModelAdmin):
 # ===============================================================================
 class ChapterAdmin(admin.ModelAdmin):
     readonly_fields = ["chapter_url"]
-    list_display = ("book", "title", "playOrder", "publish")
+    list_display = ("book", "title", "playOrder")
     list_filter = (("book", RelatedDropdownFilter),)
-
-    actions = ["toggle_published"]
-
-    def toggle_published(self, request, queryset):
-        if request.POST.get("action") == "toggle_published":
-            for obj in queryset:
-                obj.publish = not obj.publish
-                obj.save()
-            self.message_user(
-                request, "%s chapters successfully changed." % queryset.count()
-            )
-            return
-
 
 # ===============================================================================
 
@@ -48,10 +35,10 @@ class ChapterAdmin(admin.ModelAdmin):
 admin.site.register(Author)
 admin.site.register(Book)
 admin.site.register(Chapter, ChapterAdmin)
+admin.site.register(Section)
+admin.site.register(Subsection)
 admin.site.register(StaticFile)
 admin.site.register(Image, ImageAdmin)
 
 # These models don't exist right not
 # admin.site.register(Contributor)
-# admin.site.register(Section)
-# admin.site.register(Subsection, SubsectionAdmin)
