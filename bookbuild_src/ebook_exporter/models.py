@@ -15,6 +15,8 @@ from django.template.defaultfilters import slugify
 
 from ordered_model.models import OrderedModel
 
+from importer.models import Chapter
+
 MTDICT = [
     ("jpg", "image/jpeg"),
     ("html", "application/xhtml+xml"),
@@ -261,8 +263,8 @@ class Book(models.Model):
         But I reserve position 1 for the cover.
         This makes playOrder of all chapter objects sequential without missing an index
         """
-        po_count = self.chapter_set.filter(publish=True).count()
-        chapters = list(self.chapter_set.filter(publish=True).order_by("playOrder"))
+        po_count = self.chapter_set.all().count()
+        chapters = list(self.chapter_set.all().order_by("playOrder"))
         indices = list(range(2, po_count + 1))
         zipped = list(zip(indices, chapters))
         for tup in zipped:
@@ -293,7 +295,17 @@ class Book(models.Model):
         ordering = [
             "title",
         ]
-
+ 
+ # Neighborhood will become Chapter, just needs Title and order (playOrder)
+ # the following is what is happens per chapter:
+ # # - pre content (i forgot what that means where is this written?)
+ # # - priority 5 items, regardless of which section the item is in
+ # # - then each section. Section order matters
+ # # # # # - blobs are by section, orderd by priority, 
+ #              it looks like I wrote "content doesn't matter" but i can't read it. Maybe category doesn't matter?
+ # 
+ # 
+ # Categories only matter because of section. blabs should have section.  
 
 # ===============================================================================
 class Chapter(models.Model):
@@ -327,7 +339,6 @@ class Chapter(models.Model):
     display_title = models.BooleanField(default=True)
     # navPoint_id =  models.CharField(max_length=200, unique = True)
     playOrder = models.IntegerField(default=2, validators=[MinValueValidator(2)])
-    publish = models.BooleanField(default=True)
 
     # When and where am I going to sync src w/ actual file names?
     # Maybe I'll write something that looks for mismatches? Makes sure all chapters correspond to real files?
@@ -381,7 +392,7 @@ class Chapter(models.Model):
             self,
             "playOrder",
             list(
-                Chapter.objects.filter(book=self.book, publish=True).order_by(
+                Chapter.objects.filter(book=self.book).order_by(
                     "playOrder"
                 )
             ),
@@ -392,13 +403,13 @@ class Chapter(models.Model):
         # pushing all other indices up.
         try:
             dupelist = Chapter.objects.filter(
-                book=self.book, publish=True, playOrder=self.playOrder
+                book=self.book,playOrder=self.playOrder
             ).exclude(pk=self.pk)
             if len(dupelist) > 0:
                 # playOrder exists, push everything up.
                 chapts = list(
                     Chapter.objects.filter(
-                        book=self.book, publish=True, playOrder__gte=self.playOrder
+                        book=self.book, playOrder__gte=self.playOrder
                     ).exclude(pk=self.pk)
                 )
                 indices = list(
@@ -421,71 +432,68 @@ class Chapter(models.Model):
 
         super(Chapter, self).save()
 
-
+# Category / Section becomes this 
 # # ===============================================================================
-# class Section(models.Model):
-#     """Soups, starts/sides, etc.
-#     """
+class Section(models.Model):
 
-#     title = models.CharField(max_length=200)
-#     # Image. Can be blank/null, but I prefer not to.
-#     img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
+    title = models.CharField(max_length=200)
+    order = models.PositiveSmallIntegerField(null=True, blank=True)
+    main_text = models.TextField(null=True, blank=True)
+    chapter = models.OneToOneField(
+        Chapter, on_delete=models.PROTECT, null=True, blank=True
+    )    
+    # Image. Can be blank/null, but I prefer not to.
+    #img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
 
-#     # Is this related to a chapter in the book?
-#     # Section should be a chapter, but chapter might not be a section.
-#     chapter = models.OneToOneField(
-#         Chapter, on_delete=models.PROTECT, null=True, blank=True
-#     )
+    # Is this related to a chapter in the book?
+    # Cookbook structure: Section should be a chapter, but chapter might not be a section.
+    # New travel structure: section is under chapter, in hierarchy
 
-#     # ---------------------------------------------------------------------------
-#     def __str__(self):
-#         return "%s" % (self.title)
 
-#     # ---------------------------------------------------------------------------
-#     class Meta:
-#         ordering = [
-#             "title",
-#         ]
+    # ---------------------------------------------------------------------------
+    def __str__(self):
+        return "%s" % (self.title)
 
-#     # ---------------------------------------------------------------------------
-#     def save(self, *args, **kwargs):
-
-#         if self.chapter:
-#             if str(self.chapter.title) != str(self.title):
-#                 self.chapter.title = self.title
-#                 self.chapter.save()
-
-#         super(Section, self).save()
+    # ---------------------------------------------------------------------------
+    class Meta:
+        ordering = [
+            "chapter", "order",
+        ]
 
 
 # # ===============================================================================
-# class Subsection(OrderedModel):
-#     """Formerly Recipe"""
+class Subsection(models.Model):
+    """Formerly Blob"""
 
-#     title = models.CharField(max_length=200, blank=True)
-#     # If no contributor,is mine. Make sure this is true.
+    title = models.CharField(max_length=200, blank=True)
+    order = models.PositiveSmallIntegerField(null=True, blank=True)
+    section = models.ForeignKey(
+        Section, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    priority = models.PositiveSmallIntegerField(null=True, blank=True)
+    # order_with_respect_to = ('book', 'section','category', 'neighborhood')
+    category_text = models.CharField(null=True, blank=True, max_length=200)
+    main_text = models.TextField(null=True, blank=True)
+    footer_text = models.TextField(null=True, blank=True)
 
-#     # Image. Can be blank/null, but I prefer not to.
-#     img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
-#     img_lower = models.ForeignKey(
-#         Image, null=True, blank=True, related_name="lower", on_delete=models.SET_NULL
-#     )
+    # Image. Can be blank/null, but I prefer not to.
+    # img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
+    # img_lower = models.ForeignKey(
+    #     Image, null=True, blank=True, related_name="lower", on_delete=models.SET_NULL
+    # )
+    # halfpage = models.BooleanField(default=False)
+    # text = models.TextField(null=True, blank=True)
 
-#     # Note links ot book AND section. redundant, but make sit easier to get. maybe a bad idea.
-#     book = models.ForeignKey(Book, null=True, blank=True, on_delete=models.PROTECT)
-#     section = models.ForeignKey(
-#         Section, null=True, blank=True, on_delete=models.SET_NULL
-#     )
-#     order_with_respect_to = (
-#         "book",
-#         "section",
-#     )
-#     halfpage = models.BooleanField(default=False)
+    # ---------------------------------------------------------------------------
+    def __str__(self):
+        return "%s" % (self.title)
 
-#     # Common Recipe Components
-#     text = models.TextField(null=True, blank=True)
+    # ---------------------------------------------------------------------------
+    class Meta:
+        ordering = [
+            "section", "priority", "order",
+        ]
 
-#     publish = models.BooleanField(default=True)
 
 #     # ---------------------------------------------------------------------------
 #     def download_image(self):
@@ -524,15 +532,6 @@ class Chapter(models.Model):
 #             # self.save()
 
 #     # ---------------------------------------------------------------------------
-#     def __str__(self):
-#         return "%s" % (self.title)
-
-#     # ---------------------------------------------------------------------------
-#     class Meta(OrderedModel.Meta):
-#         # ordering = ['title']
-#         pass
-
-#     # ---------------------------------------------------------------------------
 #     @property
 #     def internal_url(self):
 #         """Gets link to self in case other recipe wants to link ot it
@@ -541,8 +540,4 @@ class Chapter(models.Model):
 #         recipe_url = section_url + ("#subsection-" + str(self.pk))
 #         return recipe_url
 
-#     # ---------------------------------------------------------------------------
-#     def save(self, *args, **kwargs):
-#         if not self.book:
-#             self.book = Book.objects.get(pk=1)
-#         super(Subsection, self).save()
+

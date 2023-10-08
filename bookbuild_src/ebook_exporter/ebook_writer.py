@@ -56,9 +56,9 @@ class EbookWriter:
         self.metaDataDict = {
             # This data is used to create both toc.ncx and content.opf
             "title": self.book.title,
-            "identifier": self.book.title or "isbn-000-0-000-00000-0",
+            "identifier": self.book.isbn or self.book.title,
             "creator": self.book.author_string,
-            "publisher": "Team Kaffeeklatsch",
+            #"publisher": "Team Kaffeeklatsch",
             "date": time.strftime("%Y-%m-%d"),
             "language": self.book.language or "en",
             "subject": self.book.subject or "",
@@ -158,9 +158,7 @@ class EbookWriter:
                 ctx.update(
                     {
                         "section": chapter.section,
-                        "subsections": chapter.section.subsection_set.filter(
-                            publish=True
-                        ).order_by("order"),
+                        "subsections": chapter.section.subsection_set.all().order_by("order"),
                     }
                 )
             else:
@@ -170,7 +168,7 @@ class EbookWriter:
         elif component_type == "contents":
             exclude = ["Title Page", "Copyright", "Contents"]
             chapters_all = (
-                self.book.chapter_set.filter(publish=True)
+                self.book.chapter_set.all()
                 .order_by("playOrder")
                 .exclude(title__in=exclude)
             )
@@ -180,7 +178,7 @@ class EbookWriter:
                     chapters.update(
                         {
                             c: list(
-                                c.section.subsection_set.filter(publish=True).order_by(
+                                c.section.subsection_set.all().order_by(
                                     "order"
                                 )
                             )
@@ -222,7 +220,7 @@ class EbookWriter:
             "title",
             "identifier",
             "creator",
-            "publisher",
+            #"publisher",
             "date",
             "language",
             "subject",
@@ -281,7 +279,7 @@ class EbookWriter:
         opf_str += "<item href='OEBPS/001_cover.html' id='HTML0' media-type='application/xhtml+xml'/>"
         spinelist.append("HTML0")
 
-        for c in Chapter.objects.filter(book=self.book, publish=True):
+        for c in Chapter.objects.filter(book=self.book):
             html_id = "HTML" + str(c.pk)
             spinelist.append(html_id)
             opf_str += (
@@ -326,7 +324,7 @@ class EbookWriter:
         toc_str += "<navPoint id='navPoint-1' playOrder='1'>"
         toc_str += "<navLabel><text>Cover</text></navLabel><content src='OEBPS/001_cover.html'/></navPoint>"
         self.book.sequentialize()
-        for c in list(self.book.chapter_set.filter(publish=True).order_by("playOrder")):
+        for c in list(self.book.chapter_set.all().order_by("playOrder")):
             toc_str += (
                 "<navPoint id='navPoint-"
                 + str(c.playOrder)
@@ -437,7 +435,7 @@ class EbookWriter:
 
         self.writeComponent("cover")
         for c in (
-            self.book.chapter_set.filter(publish=True)
+            self.book.chapter_set.all()
             .order_by("playOrder")
             .exclude(title__in=["Contents", "Contributors"])
         ):
