@@ -26,7 +26,7 @@ class ImageAdmin(admin.ModelAdmin):
 # ===============================================================================
 class ChapterAdmin(admin.ModelAdmin):
     readonly_fields = ["chapter_url"]
-    list_display = ("book", "title", "playOrder")
+    list_display = ("book", "title", "playOrder", "src")
     list_filter = (("book", RelatedDropdownFilter),)
 
 # ===============================================================================

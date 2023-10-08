@@ -26,6 +26,11 @@ HEADERS = {
 }
 # ---------------------------------------------------------------------------
 def atEnd(obj, field, objlist):
+    #Terrible name i want to delete.
+
+    return set_order_last(obj, field, objlist)
+
+def set_order_last(obj, field, objlist):
     """For object w/ order or playOrder, puts at end by default.
     Here bc a few models do this.
     """
@@ -42,6 +47,50 @@ def atEnd(obj, field, objlist):
             lastOrder = getattr(last, field)
             setattr(obj, field, (lastOrder + 1))
 
+def sequentialize_play_order(obj):
+
+    # playOrder MUST BE SEQUENTIAL FOR toc.ncx.
+    # If playOrder number is taken, Inserts a chapter obj desired position,
+    # pushing all other indices up.
+    try:
+        dupelist = obj.__class__.objects.filter(
+            book=obj.book,playOrder=obj.playOrder
+        ).exclude(pk=obj.pk)
+        if len(dupelist) > 0:
+            # playOrder exists, push everything up.
+            chapts = list(
+                obj.__class__.objects.filter(
+                    book=obj.book, playOrder__gte=obj.playOrder
+                ).exclude(pk=obj.pk)
+            )
+            indices = list(
+                range(obj.playOrder + 1, (obj.playOrder + (len(chapts)) + 1))
+            )
+            zipped = list(zip(indices, chapts))
+
+            for tup in zipped:
+                obj = tup[1]
+                obj.playOrder = int(tup[0])
+                # should not return self, but just in case, to avoid infinite loop:
+                if obj.pk != obj.pk:
+                    obj.save()
+    except:
+        # playOrder doesn't exist yet, all is good.
+        pass
+
+
+def make_src_file_name(obj):
+    """Makes a filename for html, based on title.
+    Don't save in this function, will be called @ save.
+    """
+    base_str = "OEBPS/0"
+    if obj.playOrder < 10:
+        base_str += "0"
+    base_str += str(obj.playOrder) + "_"
+    title = re.sub(r'[^\w]', '', obj.title.replace(" ", "").lower())
+    base_str += title + ".html"
+    return base_str
+    
 
 def replace_caps(caps_str):
     if caps_str.isupper():
@@ -367,26 +416,11 @@ class Chapter(models.Model):
 
         return str(self.src).replace("OEBPS/", "")
 
-    # ---------------------------------------------------------------------------
-    def makeFileName(self):
-        """Makes a filename for html, based on title.
-        Don't save in this function, will be called @ save.
-        """
-
-        base_str = "OEBPS/0"
-        if self.playOrder < 10:
-            base_str += "0"
-        base_str += str(self.playOrder) + "_"
-        title = self.title.replace(" ", "").lower()
-        base_str += title + ".html"
-
-        return base_str
 
     # ---------------------------------------------------------------------------
     def save(self, *args, **kwargs):
-
         # default playOrder is 0, but playOrder in toc.ncx should be 1 indexed
-        atEnd(
+        set_order_last(
             self,
             "playOrder",
             list(
@@ -397,38 +431,12 @@ class Chapter(models.Model):
         )
 
         # playOrder MUST BE SEQUENTIAL FOR toc.ncx.
-        # If playOrder number is taken, Inserts a chapter obj desired position,
-        # pushing all other indices up.
-        try:
-            dupelist = Chapter.objects.filter(
-                book=self.book,playOrder=self.playOrder
-            ).exclude(pk=self.pk)
-            if len(dupelist) > 0:
-                # playOrder exists, push everything up.
-                chapts = list(
-                    Chapter.objects.filter(
-                        book=self.book, playOrder__gte=self.playOrder
-                    ).exclude(pk=self.pk)
-                )
-                indices = list(
-                    range(self.playOrder + 1, (self.playOrder + (len(chapts)) + 1))
-                )
-                zipped = list(zip(indices, chapts))
-
-                for tup in zipped:
-                    obj = tup[1]
-                    obj.playOrder = int(tup[0])
-                    # should not return self, but just in case, to avoid infinite loop:
-                    if obj.pk != self.pk:
-                        obj.save()
-        except:
-            # playOrder doesn't exist yet, all is good.
-            pass
+        sequentialize_play_order(self)
 
         if not self.src:
-            self.src = self.makeFileName()
+            self.src = make_src_file_name(self)
 
-        super(Chapter, self).save()
+        super(Chapter, self).save(*args, **kwargs)
 
 # Category / Section becomes this 
 # # ===============================================================================

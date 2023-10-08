@@ -8,6 +8,7 @@ from django.core.serializers import base, python
 from django.core.management import call_command
 from django.db import migrations
 from django.forms.models import model_to_dict
+from ..models import set_order_last, make_src_file_name, sequentialize_play_order
 
 import logging
 
@@ -51,12 +52,12 @@ def move_data(apps, schema_editor):
         chapter = exporterChapter.objects.create(book=book, title=n.title, playOrder=min_playOrder+n.order)
         
         #looks like flo had blobs that are a chapter description
-        intro_blob = importerBlob.objects.filter(neighborhood=n, category=None, category__title="Kapitelbeschreibung").first()
+        intro_blob = importerBlob.objects.filter(neighborhood=n, category__isnull=False, category__title="Kapitelbeschreibung").first()
         if intro_blob:
-             chapter.intro = intro_blob.main_text
-
-        chapter.save() # to make src
-
+            # print(f"found an intro blob for {n}")
+            # print(intro_blob.main_text is None)
+            chapter.intro = intro_blob.main_text
+            chapter.save()
 
     for b in importerBlob.objects.filter(priority__gt=1, neighborhood__isnull=False):
         # most of the time blog sections are accessed by category: category__section
@@ -76,6 +77,21 @@ def move_data(apps, schema_editor):
             model_dict["section"] = new_section
             exporterSubsection.objects.create(**model_dict)
 
+    # why src not getting made?
+    # AH! Custom model methods are not available during migrations.
+    for c in exporterChapter.objects.all():
+        set_order_last(
+            c,
+            "playOrder",
+            list(
+                c.__class__.objects.filter(book=c.book).order_by(
+                    "playOrder"
+                )
+            ),
+        )        
+        sequentialize_play_order(c)
+        c.src = make_src_file_name(c)
+        c.save()
 
     # TEARDOWN: 
     # Restore old _get_model() function
