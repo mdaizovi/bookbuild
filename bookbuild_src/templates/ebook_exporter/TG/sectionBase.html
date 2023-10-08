@@ -32,26 +32,30 @@
   <!--<div class="bkg-img"> -->
   <div>
   {% for section in sections %}
+
     <span class="anchor" id="section-{{section.obj.pk}}"></span>
-    
+    <div class="page1"></div>
 
       <!-- Recipe-2-Titlebag used to have pagebreak before and it was causing blank pages between img and title
     so i added div big enough it should warrant own page. see if it worls -->
-    <p class="Recipe-2-Titlebag">{{ section.obj.title|safe }}</p>
-    <p class="Chapter-Title">
-      <span class="line">{{ section.obj.title }}</span>
-    </p>  
-    </div>
+    <h1>
+      <span class="line">{{ section.obj.title|safe  }}</span>
+    </h1>  
+ 
 
 
     {% for sub in section.subsections %}
-    <p class="Recipe-2-Titlebag">{{ sub.title|safe }}</p>
+    <h3>
+      <span class="line">{{ sub.title|safe  }}</span>
+    </h3>  
     <p>
       {{ sub.main_text|safe }}
     </p>
-
     {% endfor %}
 
+    <hr>
+  </div>
+  <div class="page-end"></div>
 {% endfor %}
 
 </body>
