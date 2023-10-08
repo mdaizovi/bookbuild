@@ -38,7 +38,7 @@ admin.site.register(Chapter, ChapterAdmin)
 admin.site.register(Section)
 admin.site.register(Subsection)
 admin.site.register(StaticFile)
-admin.site.register(Image, ImageAdmin)
+# admin.site.register(Image, ImageAdmin)
 
 # These models don't exist right not
 # admin.site.register(Contributor)

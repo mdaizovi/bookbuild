@@ -47,7 +47,7 @@ def move_data(apps, schema_editor):
 
     book = exporterBook.objects.first()
     for n in importerNeighborhood.objects.all():
-        min_playOrder = 2
+        min_playOrder = 3
         chapter = exporterChapter.objects.create(book=book, title=n.title, playOrder=min_playOrder+n.order)
         
         #looks like flo had blobs that are a chapter description
