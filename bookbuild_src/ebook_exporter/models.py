@@ -12,7 +12,7 @@ from django.utils.safestring import mark_safe
 from django.core.files import File
 from django.conf import settings
 from django.template.defaultfilters import slugify
-from .model_enum import FileTypeEnum, BookTypeEnum, LanguageTypeEnum, MediaTypeEnum, ChapterTypeEnum
+from .model_enum import FileTypeChoices, BookTypeChoices, LanguageTypeChoices, MediaTypeChoices, ChapterTypeChoices
 
 # MTDICT = [
 #     ("jpg", "image/jpeg"),
@@ -138,7 +138,7 @@ class StaticFile(models.Model):
     """
     # file type will also be the name of the dir.
     file_type = models.CharField(
-        max_length=200, choices=FileTypeEnum.choices(), default="css"
+        max_length=200, choices=FileTypeChoices.CHOICES, default="css"
     )
     upload = models.FileField(upload_to="exporter/static/")
 
@@ -248,7 +248,7 @@ class Book(models.Model):
     """Should this be ABS or what?
     """
     book_type = models.CharField(
-        max_length=200, choices=BookTypeEnum.choices(), default=BookTypeEnum.NONFICTION
+        max_length=200, choices=BookTypeChoices.CHOICES, default=BookTypeChoices.NONFICTION
     )
     title = models.CharField(max_length=200)
     cover = models.ForeignKey(
@@ -260,7 +260,7 @@ class Book(models.Model):
 
     # Metadata for toc.ncx and content.opf
     language = models.CharField(
-        max_length=200, choices=LanguageTypeEnum.choices(), default=LanguageTypeEnum.ENGLISH
+        max_length=200, choices=LanguageTypeChoices.CHOICES, default=LanguageTypeChoices.ENGLISH
     )
     isbn = models.CharField(
         max_length=200, null=True, blank=True, help_text="EX: isbn-000-0-000-00000-0"
@@ -356,10 +356,10 @@ class Chapter(models.Model):
 
     # For content.opf
     media_type = models.CharField(
-        max_length=200, choices=MediaTypeEnum.choices(), default=MediaTypeEnum.MEDIA_HTML
+        max_length=200, choices=MediaTypeChoices.CHOICES, default=MediaTypeChoices.MEDIA_HTML
     )
     chapter_type = models.CharField(
-        max_length=200, choices=ChapterTypeEnum.choices(), default=ChapterTypeEnum.CHAPTER_CH
+        max_length=200, choices=ChapterTypeChoices.CHOICES, default=ChapterTypeChoices.CHAPTER_CH
     )
 
     bodyText = models.TextField(null=True, blank=True)
