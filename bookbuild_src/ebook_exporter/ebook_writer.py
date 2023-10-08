@@ -10,6 +10,7 @@ from django.conf import settings
 from django.template import Context, Template
 
 from .models import Book, Chapter, Image
+from .model_enum import ChapterTypeEnum
 
 """The code that actually builds the book.
 """
@@ -147,12 +148,12 @@ class EbookWriter:
             )
         elif component_type == "chapter" and chapter:
             ctx.update({"chapter": chapter})
+            top5 = []
             sections = []
             # print(f"chapter: {chapter}")
 
-            #TODO pre content : what is that, intro?
+            ctx.update({"top5":top5})
 
-            #TODO get priority 5 items here
             if chapter.section_set.all().count()>0:
                 html_path_list = [
                         settings.BASE_DIR,
@@ -163,21 +164,28 @@ class EbookWriter:
                 ]                
                 for section in chapter.section_set.all():
                     # print(f"section: {section}")
+                    top5 += [x for x in section.subsection_set.filter(priority__gte=5).order_by("order")]
                     sections.append(
                         {
                             "obj": section,
-                            "subsections": [x for x in section.subsection_set.all().order_by("priority", "order")],
+                            "subsections": [x for x in section.subsection_set.filter(priority__lte=4).order_by("-priority", "order")],
                         }
                     )
-                ctx.update({"sections":sections})
+
+                def nonesorter(a):
+                    if not a.order:
+                        return 0
+                    return a.order
+                top5.sort(key=lambda x: nonesorter(x), reverse=True)
+                ctx.update({"sections":sections, "top5":top5})
                 
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
         elif component_type == "contents":
-            exclude = ["Title Page", "Copyright", "Contents"]
+            exclude = [ChapterTypeEnum.CHAPTER_TP, ChapterTypeEnum.CHAPTER_CR, ChapterTypeEnum.CHAPTER_C]
             chapters_all = (
                 self.book.chapter_set.all()
                 .order_by("playOrder")
-                .exclude(title__in=exclude)
+                .exclude(chapter_type__in=exclude)
             )
             chapters = OrderedDict()
             for c in chapters_all:
@@ -195,7 +203,7 @@ class EbookWriter:
                 else:
                     chapters.update({c: []})
             ctx.update({"chapters": chapters})
-            chapter = Chapter.objects.get(book=self.book, title="Contents")
+            chapter = Chapter.objects.filter(book=self.book, chapter_type=ChapterTypeEnum.CHAPTER_C).first()
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
 
         html_file = os.path.join(*html_path_list)
@@ -442,17 +450,16 @@ class EbookWriter:
             copyanything(local_location, DESTINATION_FILE_PATH)
 
         self.writeComponent("cover")
+
         for c in (
             self.book.chapter_set.all()
             .order_by("playOrder")
-            .exclude(title__in=["Contents", "Contributors"])
+            .exclude(chapter_type=ChapterTypeEnum.CHAPTER_C)
         ):
             self.writeComponent(component_type="chapter", chapter=c)
         if self.book.book_type in ["CK", "TG"]:
-            if Chapter.objects.filter(title="Contents", book=self.book).exists():
+            if Chapter.objects.filter(chapter_type=ChapterTypeEnum.CHAPTER_C, book=self.book).exists():
                 self.writeComponent("contents")
-            if Chapter.objects.filter(title="Contributors", book=self.book).exists():
-                self.writeComponent("contribute")
 
         self.writeOPF()
         self.writeTOC()

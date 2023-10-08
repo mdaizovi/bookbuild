@@ -12,18 +12,18 @@ from django.utils.safestring import mark_safe
 from django.core.files import File
 from django.conf import settings
 from django.template.defaultfilters import slugify
+from .model_enum import FileTypeEnum, BookTypeEnum, LanguageTypeEnum, MediaTypeEnum, ChapterTypeEnum
 
-
-MTDICT = [
-    ("jpg", "image/jpeg"),
-    ("html", "application/xhtml+xml"),
-    ("dtbncx", "application/x-dtbncx+xml"),
-    ("css", "text/css"),
-    ("vnd", "application/vnd.ms-opentype"),
-]
-HEADERS = {
-    "User-agent": "Mozilla/5.0 (X11; U; Linux i686; de; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1"
-}
+# MTDICT = [
+#     ("jpg", "image/jpeg"),
+#     ("html", "application/xhtml+xml"),
+#     ("dtbncx", "application/x-dtbncx+xml"),
+#     ("css", "text/css"),
+#     ("vnd", "application/vnd.ms-opentype"),
+# ]
+# HEADERS = {
+#     "User-agent": "Mozilla/5.0 (X11; U; Linux i686; de; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1"
+# }
 # ---------------------------------------------------------------------------
 def atEnd(obj, field, objlist):
     #Terrible name i want to delete.
@@ -136,19 +136,9 @@ class Author(Person):
 class StaticFile(models.Model):
     """File such as CSS that book might need.
     """
-
-    FONT = "fonts"
-    IMG = "images"
-    CSS = "css"
-
-    FILE_TYPE_CHOICES = [
-        (FONT, FONT),
-        (IMG, IMG),
-        (CSS, CSS),
-    ]
     # file type will also be the name of the dir.
     file_type = models.CharField(
-        max_length=200, choices=FILE_TYPE_CHOICES, default="css"
+        max_length=200, choices=FileTypeEnum.choices(), default="css"
     )
     upload = models.FileField(upload_to="exporter/static/")
 
@@ -257,22 +247,8 @@ class BookManager(models.Manager):
 class Book(models.Model):
     """Should this be ABS or what?
     """
-    TRAVELGUIDE = "TG"
-    NONFICTION = "NF"
-    BOOK_TYPE_CHOICES = [
-        (NONFICTION, "nonfiction"),
-        (TRAVELGUIDE, "travelguide"),
-    ]
-
-    ENGLISH = "EN"
-    GERMAN = "DE"
-    BOOK_LANGUAGE_CHOICES = [
-        (ENGLISH, "English"),
-        (GERMAN, "German"),
-    ]
-
     book_type = models.CharField(
-        max_length=200, choices=BOOK_TYPE_CHOICES, default=NONFICTION
+        max_length=200, choices=BookTypeEnum.choices(), default=BookTypeEnum.NONFICTION
     )
     title = models.CharField(max_length=200)
     cover = models.ForeignKey(
@@ -284,7 +260,7 @@ class Book(models.Model):
 
     # Metadata for toc.ncx and content.opf
     language = models.CharField(
-        max_length=200, choices=BOOK_LANGUAGE_CHOICES, default=ENGLISH
+        max_length=200, choices=LanguageTypeEnum.choices(), default=LanguageTypeEnum.ENGLISH
     )
     isbn = models.CharField(
         max_length=200, null=True, blank=True, help_text="EX: isbn-000-0-000-00000-0"
@@ -364,20 +340,6 @@ class Chapter(models.Model):
         Summary: ill not ALWAYS be a chapter, but will often be a chapter, so is named as such.
     """
 
-    MEDIA_JPEG = "jpg"
-    MEDIA_HTML = "html"
-    MEDIA_DTBNCX = "dtbncx"
-    MEDIA_CSS = "css"
-    MEDIA_VND = "vnd"
-
-    MEDIA_TYPE_CHICES = [
-        (MEDIA_JPEG, "image/jpeg"),
-        (MEDIA_HTML, "application/xhtml+xml"),
-        (MEDIA_DTBNCX, "application/x-dtbncx+xml"),
-        (MEDIA_CSS, "text/css"),
-        (MEDIA_VND, "application/vnd.ms-opentype"),
-    ]
-
     book = models.ForeignKey(Book, on_delete=models.PROTECT)
     # For toc.ncx
     title = models.CharField(max_length=200)
@@ -394,7 +356,10 @@ class Chapter(models.Model):
 
     # For content.opf
     media_type = models.CharField(
-        max_length=200, choices=MEDIA_TYPE_CHICES, default=MEDIA_HTML
+        max_length=200, choices=MediaTypeEnum.choices(), default=MediaTypeEnum.MEDIA_HTML
+    )
+    chapter_type = models.CharField(
+        max_length=200, choices=ChapterTypeEnum.choices(), default=ChapterTypeEnum.CHAPTER_CH
     )
 
     bodyText = models.TextField(null=True, blank=True)

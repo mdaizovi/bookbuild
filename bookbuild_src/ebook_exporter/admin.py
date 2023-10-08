@@ -26,7 +26,7 @@ class ImageAdmin(admin.ModelAdmin):
 # ===============================================================================
 class ChapterAdmin(admin.ModelAdmin):
     readonly_fields = ["chapter_url"]
-    list_display = ("book", "title", "playOrder", "src")
+    list_display = ("book", "title", "playOrder", "chapter_type")
     list_filter = (("book", RelatedDropdownFilter),)
 
 # ===============================================================================
@@ -35,9 +35,12 @@ class SectionAdmin(admin.ModelAdmin):
     list_filter = (("chapter", RelatedDropdownFilter),)
 
 # ===============================================================================
-class SubectionAdmin(admin.ModelAdmin):
-    list_display = ("title","section")
-    list_filter = (("section", RelatedDropdownFilter),)
+class SubsectionAdmin(admin.ModelAdmin):
+    search_fields = ("title","priority")
+    list_display = ("title","section", "priority", "order")
+    list_filter = (("section", RelatedDropdownFilter),
+                   ("section__chapter", RelatedDropdownFilter),
+                   )
 
 # ===============================================================================
 
@@ -46,7 +49,7 @@ admin.site.register(Author)
 admin.site.register(Book)
 admin.site.register(Chapter, ChapterAdmin)
 admin.site.register(Section, SectionAdmin)
-admin.site.register(Subsection)
+admin.site.register(Subsection, SubsectionAdmin)
 admin.site.register(StaticFile)
 # admin.site.register(Image, ImageAdmin)
 

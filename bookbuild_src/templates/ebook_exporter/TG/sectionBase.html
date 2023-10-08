@@ -29,6 +29,17 @@
   <hr>
 {% endif %}
   
+
+{% for sub in top5 %}
+<h3>
+  <span class="line">{{ sub.title|safe  }}</span>
+</h3>  
+<p>
+  {{ sub.main_text|safe }}
+</p>
+{% endfor %}
+
+
   <!--<div class="bkg-img"> -->
   <div>
   {% for section in sections %}
