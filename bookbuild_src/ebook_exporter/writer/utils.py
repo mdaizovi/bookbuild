@@ -23,7 +23,7 @@ def copyanything(src, dst):
             raise
 
 
-def cleanUp(files_to_delete, folders_to_delete):
+def cleanUp(files_to_delete=[], folders_to_delete=[]):
     """
     After epub is written,
     delete files and folders I wrote dynamically to Add2Epub, so won't confuse and conflict.
@@ -37,7 +37,9 @@ def cleanUp(files_to_delete, folders_to_delete):
         os.remove(f)
     for f in folders_to_delete:
         rmtree(f)
-    print("All cleaned up!")
+
+def compress(newBookDir, book_dir):
+    make_archive(newBookDir, "zip", book_dir)
 
 
 def download_images_from_aws():

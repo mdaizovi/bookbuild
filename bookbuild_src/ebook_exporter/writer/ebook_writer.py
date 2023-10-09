@@ -1,67 +1,25 @@
-import boto3
 import codecs
-import errno
 import os
 import time
-from shutil import copy, copytree, ignore_patterns, make_archive, rmtree
-from collections import OrderedDict
 
 from django.conf import settings
 from django.template import Context, Template
 
-from ..models import Book, Chapter, Image
-from ..model_enum import ChapterTypeChoices
-
 from .utils import (
-    copyanything,
     cleanUp,
+    copyanything,
+    compress,
     download_images_from_aws,
     download_static_from_aws,
 )
 from .queries import BookQueries
 
+# python manage.py export_ebook --book 1  --get_assets
+
+
 # ===============================================================================
 class EbookWriter:
-    def __init__(self, book=None, get_assets=False):
-        if not book:
-            book = BookQueries.get_book(pk=1)
-        self.book = book
 
-        self.CSS_SNIPPET = ""
-        for f in BookQueries.get_all_files(book=self.book):
-            self.CSS_SNIPPET += (
-                '<link href="%s" rel="stylesheet" type="text/css"/>' % f.relative_url
-            )
-        # self.CSS_SNIPPET = '<link href="css/stylesheet.css" rel="stylesheet" type="text/css"/>'
-
-        self.get_assets = (
-            get_assets  # whether or not to download images, css, etc from aws
-        )
-
-        self.BOOK_BASE_DIR = os.path.join(settings.BASE_DIR, "ebook_exporter")
-        self.DESTINATION_MEDIA_PATH = os.path.join(
-            self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", "media"
-        )
-        self.TOC_FILE = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", "toc.ncx")
-        self.OPF_FILE = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", "content.opf")
-        # files and folders I made dynamically.
-        self.FILES_TO_DELETE = [self.TOC_FILE, self.OPF_FILE]
-        self.FOLDERS_TO_DELETE = [self.DESTINATION_MEDIA_PATH]
-
-        self.metaDataDict = {
-            # This data is used to create both toc.ncx and content.opf
-            "title": self.book.title,
-            "identifier": self.book.isbn or self.book.title,
-            "creator": self.book.author_string,
-            # "publisher": "Team Kaffeeklatsch",
-            "date": time.strftime("%Y-%m-%d"),
-            "language": self.book.language or "en",
-            "subject": self.book.subject or "",
-            "description": "",
-            "format": "0 pages",
-            "type": "Text",
-            "rights": "All rights reserved",
-        }
 
     # -------------------------------------------------------------------------------
     def writeComponent(self, component_type, chapter=None):
@@ -129,6 +87,114 @@ class EbookWriter:
         self.FILES_TO_DELETE.append(html_destination)
 
         return template.render(ctx)
+    
+    # -------------------------------------------------------------------------------
+    def writeBook(self):
+        """For some reason calling writeTOC() inside of buildNewEpub() makes the toc not work,
+        but this is fine.
+        """
+
+        # NOTE: I build book form whatever images and html i can find in OEBPS
+
+        # by the time i get here, html and images should be ready.
+
+        # Copy uploaded images from media root to
+        # copyanything(MEDIA_ROOT, self.DESTINATION_MEDIA_PATH)
+        # so url will be same.
+
+        if self.get_assets:
+            download_images_from_aws()
+            download_static_from_aws()
+
+        imageList = BookQueries.get_all_images(book=self.book)
+        # make folder media
+        if not os.path.exists(self.DESTINATION_MEDIA_PATH):
+            os.makedirs(self.DESTINATION_MEDIA_PATH)
+        # TODO: write this better later. for now I'm just including all images in Flo's book.
+        # if len(imageList) > 0:
+        if len(imageList) > 1:
+            for i in imageList:
+                # NOTE using i.img.file always called online location and didn't work offline.
+                local_location = os.path.join(settings.MEDIA_ROOT, str(i.img.name))
+                copyanything(local_location, self.DESTINATION_MEDIA_PATH)
+        else:
+            for i in os.listdir(settings.MEDIA_ROOT + "/img/"):
+                copyanything(
+                    settings.MEDIA_ROOT + "/img/" + i, self.DESTINATION_MEDIA_PATH
+                )
+
+        for f in BookQueries.get_all_files(book=self.book):
+            DESTINATION_FILE_PATH = os.path.join(
+                self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", f.file_type
+            )
+            if not os.path.exists(DESTINATION_FILE_PATH):
+                os.makedirs(DESTINATION_FILE_PATH)
+            local_location = os.path.join(
+                settings.MEDIA_ROOT, "ebook_exporter", "static", f.filename
+            )
+            copyanything(local_location, DESTINATION_FILE_PATH)
+
+        self.writeComponent("cover")
+
+        for c in BookQueries.get_chapters_except_contents(book=self.book):
+            self.writeComponent(component_type="chapter", chapter=c)
+        # if self.book.book_type in ["CK", "TG"]:
+        #     contents_chapter =  BookQueries.get_contents_chapter(book=self.book)
+        #     if contents_chapter is not None:
+        #         self.writeComponent("contents")
+
+        self.writeOPF()
+        self.writeTOC()
+        self.buildNewEpub(self.book.slugify_title())
+
+        cleanUp(
+            files_to_delete=self.FILES_TO_DELETE,
+            folders_to_delete=self.FOLDERS_TO_DELETE,
+        )
+
+
+    #Prob will nevr need to edit or look at this crap below.
+    # -------------------------------------------------------------------------------
+    def __init__(self, book=None, get_assets=False):
+        if not book:
+            book = BookQueries.get_book(pk=1)
+        self.book = book
+
+        self.CSS_SNIPPET = ""
+        for f in BookQueries.get_all_files(book=self.book):
+            self.CSS_SNIPPET += (
+                '<link href="%s" rel="stylesheet" type="text/css"/>' % f.relative_url
+            )
+        # self.CSS_SNIPPET = '<link href="css/stylesheet.css" rel="stylesheet" type="text/css"/>'
+
+        self.get_assets = (
+            get_assets  # whether or not to download images, css, etc from aws
+        )
+
+        self.BOOK_BASE_DIR = os.path.join(settings.BASE_DIR, "ebook_exporter")
+        self.DESTINATION_MEDIA_PATH = os.path.join(
+            self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", "media"
+        )
+        self.TOC_FILE = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", "toc.ncx")
+        self.OPF_FILE = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", "content.opf")
+        # files and folders I made dynamically.
+        self.FILES_TO_DELETE = [self.TOC_FILE, self.OPF_FILE]
+        self.FOLDERS_TO_DELETE = [self.DESTINATION_MEDIA_PATH]
+
+        self.metaDataDict = {
+            # This data is used to create both toc.ncx and content.opf
+            "title": self.book.title,
+            "identifier": self.book.isbn or self.book.title,
+            "creator": self.book.author_string,
+            # "publisher": "Team Kaffeeklatsch",
+            "date": time.strftime("%Y-%m-%d"),
+            "language": self.book.language or "en",
+            "subject": self.book.subject or "",
+            "description": "",
+            "format": "0 pages",
+            "type": "Text",
+            "rights": "All rights reserved",
+        }
 
     # -------------------------------------------------------------------------------
     def writeOPF(self):
@@ -282,7 +348,7 @@ class EbookWriter:
             newBookDir = os.path.join(self.BOOK_BASE_DIR, thisTitle)
 
             # 4. compress
-            make_archive(newBookDir, "zip", book_dir)
+            compress(newBookDir, book_dir)
 
             # 5. then change from zip to epub
             os.rename(
@@ -291,71 +357,4 @@ class EbookWriter:
             )
 
             # 6. remove old folder
-            rmtree(book_dir)
-
-    # -------------------------------------------------------------------------------
-    def writeBook(self):
-        """For some reason calling writeTOC() inside of buildNewEpub() makes the toc not work,
-        but this is fine.
-        """
-
-        # NOTE: I build book form whatever images and html i can find in OEBPS
-
-        # by the time i get here, html and images should be ready.
-
-        # Copy uploaded images from media root to
-        # copyanything(MEDIA_ROOT, self.DESTINATION_MEDIA_PATH)
-        # so url will be same.
-
-        if self.get_assets:
-            download_images_from_aws()
-            download_static_from_aws()
-
-        imageList = BookQueries.get_all_images(book=self.book)
-        # make folder media
-        if not os.path.exists(self.DESTINATION_MEDIA_PATH):
-            os.makedirs(self.DESTINATION_MEDIA_PATH)
-        # TODO: write this better later. for now I'm just including all images in Flo's book.
-        # if len(imageList) > 0:
-        if len(imageList) > 1:
-            for i in imageList:
-                # NOTE using i.img.file always called online location and didn't work offline.
-                local_location = os.path.join(settings.MEDIA_ROOT, str(i.img.name))
-                copyanything(local_location, self.DESTINATION_MEDIA_PATH)
-        else:
-            for i in os.listdir(settings.MEDIA_ROOT + "/img/"):
-                copyanything(
-                    settings.MEDIA_ROOT + "/img/" + i, self.DESTINATION_MEDIA_PATH
-                )
-
-        for f in BookQueries.get_all_files(book=self.book):
-            DESTINATION_FILE_PATH = os.path.join(
-                self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", f.file_type
-            )
-            if not os.path.exists(DESTINATION_FILE_PATH):
-                os.makedirs(DESTINATION_FILE_PATH)
-            local_location = os.path.join(
-                settings.MEDIA_ROOT, "ebook_exporter", "static", f.filename
-            )
-            copyanything(local_location, DESTINATION_FILE_PATH)
-
-        self.writeComponent("cover")
-
-        for c in BookQueries.get_chapters_except_contents(book=self.book):
-            self.writeComponent(component_type="chapter", chapter=c)
-        # if self.book.book_type in ["CK", "TG"]:
-        #     contents_chapter =  BookQueries.get_contents_chapter(book=self.book)
-        #     if contents_chapter is not None:
-        #         self.writeComponent("contents")
-
-        self.writeOPF()
-        self.writeTOC()
-        self.buildNewEpub(self.book.slugify_title())
-
-        self.cleanUp(
-            files_to_delete=self.FILES_TO_DELETE,
-            folders_to_delete=self.FOLDERS_TO_DELETE,
-        )
-
-
-# python manage.py export_ebook --book 1  --get_assets
+            cleanUp(folders_to_delete=[book_dir])
