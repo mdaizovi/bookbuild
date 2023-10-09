@@ -14,6 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def move_data(apps, schema_editor):
     """
     Monkey patches get_model to ensure that you are using historically appropriate version of models when calling loaddata, etc
@@ -38,21 +39,31 @@ def move_data(apps, schema_editor):
     python._get_model = _get_model
 
     # ACTION:
-    importerNeighborhood = apps.get_model(app_label='importer', model_name='Neighborhood')
-    importerBlob = apps.get_model(app_label='importer', model_name='Blob')
+    importerNeighborhood = apps.get_model(
+        app_label="importer", model_name="Neighborhood"
+    )
+    importerBlob = apps.get_model(app_label="importer", model_name="Blob")
 
-    exporterBook = apps.get_model(app_label='ebook_exporter', model_name='Book')
-    exporterChapter = apps.get_model(app_label='ebook_exporter', model_name='Chapter')
-    exporterSection = apps.get_model(app_label='ebook_exporter', model_name='Section')
-    exporterSubsection = apps.get_model(app_label='ebook_exporter', model_name='Subsection')
+    exporterBook = apps.get_model(app_label="ebook_exporter", model_name="Book")
+    exporterChapter = apps.get_model(app_label="ebook_exporter", model_name="Chapter")
+    exporterSection = apps.get_model(app_label="ebook_exporter", model_name="Section")
+    exporterSubsection = apps.get_model(
+        app_label="ebook_exporter", model_name="Subsection"
+    )
 
     book = exporterBook.objects.first()
     for n in importerNeighborhood.objects.all():
         min_playOrder = 3
-        chapter = exporterChapter.objects.create(book=book, title=n.title, playOrder=min_playOrder+n.order)
-        
-        #looks like flo had blobs that are a chapter description
-        intro_blob = importerBlob.objects.filter(neighborhood=n, category__isnull=False, category__title="Kapitelbeschreibung").first()
+        chapter = exporterChapter.objects.create(
+            book=book, title=n.title, playOrder=min_playOrder + n.order
+        )
+
+        # looks like flo had blobs that are a chapter description
+        intro_blob = importerBlob.objects.filter(
+            neighborhood=n,
+            category__isnull=False,
+            category__title="Kapitelbeschreibung",
+        ).first()
         if intro_blob:
             # print(f"found an intro blob for {n}")
             # print(intro_blob.main_text is None)
@@ -62,7 +73,7 @@ def move_data(apps, schema_editor):
     for b in importerBlob.objects.filter(priority__gt=1, neighborhood__isnull=False):
         # most of the time blog sections are accessed by category: category__section
         # so if we make a new section from each old section,
-        # we just need to get each blob's category.section, and give it that section directly. 
+        # we just need to get each blob's category.section, and give it that section directly.
         old_section = b.category.section if b.category else b.section
         # Impressum has no old_section. that's it.
         if old_section:
@@ -70,9 +81,18 @@ def move_data(apps, schema_editor):
             neighborhood = b.neighborhood
 
             chapter = exporterChapter.objects.get(title=neighborhood.title)
-            new_section, __ = exporterSection.objects.get_or_create(title=old_section.title, order=old_section.order, chapter=chapter)
-            
-            subsection_attrs = ["title", "order", "priority", "category_text", "main_text", "footer_text"]
+            new_section, __ = exporterSection.objects.get_or_create(
+                title=old_section.title, order=old_section.order, chapter=chapter
+            )
+
+            subsection_attrs = [
+                "title",
+                "order",
+                "priority",
+                "category_text",
+                "main_text",
+                "footer_text",
+            ]
             model_dict = model_to_dict(b, fields=subsection_attrs)
             model_dict["section"] = new_section
             exporterSubsection.objects.create(**model_dict)
@@ -83,17 +103,13 @@ def move_data(apps, schema_editor):
         set_order_last(
             c,
             "playOrder",
-            list(
-                c.__class__.objects.filter(book=c.book).order_by(
-                    "playOrder"
-                )
-            ),
-        )        
+            list(c.__class__.objects.filter(book=c.book).order_by("playOrder")),
+        )
         sequentialize_play_order(c)
         c.src = make_src_file_name(c)
         c.save()
 
-    # TEARDOWN: 
+    # TEARDOWN:
     # Restore old _get_model() function
     python._get_model = old_get_model
 

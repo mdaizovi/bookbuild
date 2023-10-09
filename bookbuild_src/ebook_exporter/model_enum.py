@@ -1,4 +1,4 @@
-class FileTypeChoices():
+class FileTypeChoices:
     FONT = "fonts"
     IMG = "images"
     CSS = "css"
@@ -8,7 +8,8 @@ class FileTypeChoices():
         (CSS, CSS),
     ]
 
-class BookTypeChoices():
+
+class BookTypeChoices:
     TRAVELGUIDE = "TG"
     NONFICTION = "NF"
     CHOICES = [
@@ -16,7 +17,8 @@ class BookTypeChoices():
         (TRAVELGUIDE, "travelguide"),
     ]
 
-class LanguageTypeChoices():
+
+class LanguageTypeChoices:
     ENGLISH = "EN"
     GERMAN = "DE"
     CHOICES = [
@@ -24,7 +26,8 @@ class LanguageTypeChoices():
         (GERMAN, "German"),
     ]
 
-class MediaTypeChoices():
+
+class MediaTypeChoices:
     MEDIA_JPEG = "jpg"
     MEDIA_HTML = "html"
     MEDIA_DTBNCX = "dtbncx"
@@ -39,13 +42,13 @@ class MediaTypeChoices():
         (MEDIA_VND, "application/vnd.ms-opentype"),
     ]
 
- 
-class ChapterTypeChoices():
+
+class ChapterTypeChoices:
     CHAPTER_TP = "TP"
     CHAPTER_CR = "CR"
     CHAPTER_C = "C"
     CHAPTER_CH = "CH"
-    
+
     CHOICES = [
         (CHAPTER_TP, "Title Page"),
         (CHAPTER_CR, "Copyright"),

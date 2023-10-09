@@ -39,6 +39,7 @@ class CategoryAdmin(ImportExportModelAdmin):
     list_display = fields
     search_fields = ["title"]
 
+
 class NeighborhoodResource(resources.ModelResource):
     class Meta:
         model = Neighborhood

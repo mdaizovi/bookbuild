@@ -29,18 +29,22 @@ class ChapterAdmin(admin.ModelAdmin):
     list_display = ("book", "title", "playOrder", "chapter_type")
     list_filter = (("book", RelatedDropdownFilter),)
 
+
 # ===============================================================================
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ("title","chapter")
+    list_display = ("title", "chapter")
     list_filter = (("chapter", RelatedDropdownFilter),)
+
 
 # ===============================================================================
 class SubsectionAdmin(admin.ModelAdmin):
-    search_fields = ("title","priority")
-    list_display = ("title","section", "priority", "order")
-    list_filter = (("section", RelatedDropdownFilter),
-                   ("section__chapter", RelatedDropdownFilter),
-                   )
+    search_fields = ("title", "priority")
+    list_display = ("title", "section", "priority", "order")
+    list_filter = (
+        ("section", RelatedDropdownFilter),
+        ("section__chapter", RelatedDropdownFilter),
+    )
+
 
 # ===============================================================================
 

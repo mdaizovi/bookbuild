@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class BaseModel(models.Model):
     title = models.CharField(max_length=200)
     order = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -10,12 +11,15 @@ class BaseModel(models.Model):
     def __str__(self):
         return "<{}> {}".format(self.__class__.__name__, self.title)
 
+
 #### Neighborhood is basically chapter
 class Neighborhood(BaseModel):
     pass
 
+
 class Section(BaseModel):
     pass
+
 
 class Category(BaseModel):
     main_text = models.TextField(null=True, blank=True)
@@ -42,4 +46,3 @@ class Blob(BaseModel):
     footer_text = models.TextField(null=True, blank=True)
 
     soft_delete = models.BooleanField(default=False)
-

@@ -3,69 +3,60 @@
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
   <title>{{ book.title|safe }}</title>
   {{ CSS_SNIPPET|safe }} 
-  <!-- <meta content="urn:uuid:" name="Adept.expected.resource"/> -->
 </head>
 
 <body>
 
   {% if chapter.display_title %}
-  <p class="Chapter-Title">
-    <span class="line">{{ chapter.title }}</span>
-  </p>  
-  <hr>
-{% endif %}
+    <p class="Chapter-Title">
+      <span class="line">{{ chapter.title }}</span>
+    </p>  
+    <hr>
+  {% endif %}
 
-{% if chapter.intro %}
-  <p>
-    {{ chapter.intro|safe }}
-  </p>
-  <hr>
-{% endif %}
+  {% if chapter.intro %}
+    <p>
+      {{ chapter.intro|safe }}
+    </p>
+    <hr>
+  {% endif %}
 
-{% if chapter.bodyText %}
-  <p>
-    {{ chapter.bodyText|safe }}
-  </p>
-  <hr>
-{% endif %}
+  {% if chapter.bodyText %}
+    <p>
+      {{ chapter.bodyText|safe }}
+    </p>
+    <hr>
+  {% endif %}
   
 
-{% for sub in top5 %}
-<h3>
-  <span class="line">{{ sub.title|safe  }}</span>
-</h3>  
-<p>
-  {{ sub.main_text|safe }}
-</p>
-{% endfor %}
-
-
-  <!--<div class="bkg-img"> -->
-  <div>
-  {% for section in sections %}
-
-    <span class="anchor" id="section-{{section.obj.pk}}"></span>
-    <div class="page1"></div>
-
-      <!-- Recipe-2-Titlebag used to have pagebreak before and it was causing blank pages between img and title
-    so i added div big enough it should warrant own page. see if it worls -->
-    <h1>
-      <span class="line">{{ section.obj.title|safe  }}</span>
-    </h1>  
- 
-
-
-    {% for sub in section.subsections %}
+  {% for sub in top5 %}
     <h3>
       <span class="line">{{ sub.title|safe  }}</span>
     </h3>  
     <p>
       {{ sub.main_text|safe }}
     </p>
-    {% endfor %}
+  {% endfor %}
 
+
+  {% for section in sections %}
+    <span class="anchor" id="section-{{section.obj.pk}}"></span>
+    <div class="page1"></div>
+    <h1>
+      <span class="line">{{ section.obj.title|safe  }}</span>
+    </h1>
+
+    {% for sub in section.subsections %}
+      <h3>
+        <span class="line">
+          {{ sub.title|safe  }}
+        </span>
+      </h3>  
+      <p>
+        {{ sub.main_text|safe }}
+      </p>
+    {% endfor %}
     <hr>
-  </div>
   <div class="page-end"></div>
 {% endfor %}
 

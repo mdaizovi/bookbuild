@@ -12,7 +12,13 @@ from django.utils.safestring import mark_safe
 from django.core.files import File
 from django.conf import settings
 from django.template.defaultfilters import slugify
-from .model_enum import FileTypeChoices, BookTypeChoices, LanguageTypeChoices, MediaTypeChoices, ChapterTypeChoices
+from .model_enum import (
+    FileTypeChoices,
+    BookTypeChoices,
+    LanguageTypeChoices,
+    MediaTypeChoices,
+    ChapterTypeChoices,
+)
 
 # MTDICT = [
 #     ("jpg", "image/jpeg"),
@@ -26,9 +32,10 @@ from .model_enum import FileTypeChoices, BookTypeChoices, LanguageTypeChoices, M
 # }
 # ---------------------------------------------------------------------------
 def atEnd(obj, field, objlist):
-    #Terrible name i want to delete.
+    # Terrible name i want to delete.
 
     return set_order_last(obj, field, objlist)
+
 
 def set_order_last(obj, field, objlist):
     """For object w/ order or playOrder, puts at end by default.
@@ -47,6 +54,7 @@ def set_order_last(obj, field, objlist):
             lastOrder = getattr(last, field)
             setattr(obj, field, (lastOrder + 1))
 
+
 def sequentialize_play_order(obj):
 
     # playOrder MUST BE SEQUENTIAL FOR toc.ncx.
@@ -54,7 +62,7 @@ def sequentialize_play_order(obj):
     # pushing all other indices up.
     try:
         dupelist = obj.__class__.objects.filter(
-            book=obj.book,playOrder=obj.playOrder
+            book=obj.book, playOrder=obj.playOrder
         ).exclude(pk=obj.pk)
         if len(dupelist) > 0:
             # playOrder exists, push everything up.
@@ -87,10 +95,10 @@ def make_src_file_name(obj):
     if obj.playOrder < 10:
         base_str += "0"
     base_str += str(obj.playOrder) + "_"
-    title = re.sub(r'[^\w]', '', obj.title.replace(" ", "").lower())
+    title = re.sub(r"[^\w]", "", obj.title.replace(" ", "").lower())
     base_str += title + ".html"
     return base_str
-    
+
 
 def replace_caps(caps_str):
     if caps_str.isupper():
@@ -136,6 +144,7 @@ class Author(Person):
 class StaticFile(models.Model):
     """File such as CSS that book might need.
     """
+
     # file type will also be the name of the dir.
     file_type = models.CharField(
         max_length=200, choices=FileTypeChoices.CHOICES, default="css"
@@ -234,7 +243,7 @@ class BookManager(models.Manager):
         if book.cover:
             images.append(book.cover)
         # for mod in [Subsection, Chapter]:
-        for mod in [Chapter]:        
+        for mod in [Chapter]:
             for obj in mod.objects.filter(book=book):
                 if hasattr(obj, "img") and obj.img:
                     images.append(obj.img)
@@ -247,8 +256,11 @@ class BookManager(models.Manager):
 class Book(models.Model):
     """Should this be ABS or what?
     """
+
     book_type = models.CharField(
-        max_length=200, choices=BookTypeChoices.CHOICES, default=BookTypeChoices.NONFICTION
+        max_length=200,
+        choices=BookTypeChoices.CHOICES,
+        default=BookTypeChoices.NONFICTION,
     )
     title = models.CharField(max_length=200)
     cover = models.ForeignKey(
@@ -260,7 +272,9 @@ class Book(models.Model):
 
     # Metadata for toc.ncx and content.opf
     language = models.CharField(
-        max_length=200, choices=LanguageTypeChoices.CHOICES, default=LanguageTypeChoices.ENGLISH
+        max_length=200,
+        choices=LanguageTypeChoices.CHOICES,
+        default=LanguageTypeChoices.ENGLISH,
     )
     isbn = models.CharField(
         max_length=200, null=True, blank=True, help_text="EX: isbn-000-0-000-00000-0"
@@ -317,17 +331,18 @@ class Book(models.Model):
         ordering = [
             "title",
         ]
- 
- # Neighborhood will become Chapter, just needs Title and order (playOrder)
- # the following is what is happens per chapter:
- # # - pre content (i forgot what that means where is this written?)
- # # - priority 5 items, regardless of which section the item is in
- # # - then each section. Section order matters
- # # # # # - blobs are by section, orderd by priority, 
- #              it looks like I wrote "content doesn't matter" but i can't read it. Maybe category doesn't matter?
- # 
- # 
- # Categories only matter because of section. blabs should have section.  
+
+
+# Neighborhood will become Chapter, just needs Title and order (playOrder)
+# the following is what is happens per chapter:
+# # - pre content (i forgot what that means where is this written?)
+# # - priority 5 items, regardless of which section the item is in
+# # - then each section. Section order matters
+# # # # # - blobs are by section, orderd by priority,
+#              it looks like I wrote "content doesn't matter" but i can't read it. Maybe category doesn't matter?
+#
+#
+# Categories only matter because of section. blabs should have section.
 
 # ===============================================================================
 class Chapter(models.Model):
@@ -356,10 +371,14 @@ class Chapter(models.Model):
 
     # For content.opf
     media_type = models.CharField(
-        max_length=200, choices=MediaTypeChoices.CHOICES, default=MediaTypeChoices.MEDIA_HTML
+        max_length=200,
+        choices=MediaTypeChoices.CHOICES,
+        default=MediaTypeChoices.MEDIA_HTML,
     )
     chapter_type = models.CharField(
-        max_length=200, choices=ChapterTypeChoices.CHOICES, default=ChapterTypeChoices.CHAPTER_CH
+        max_length=200,
+        choices=ChapterTypeChoices.CHOICES,
+        default=ChapterTypeChoices.CHAPTER_CH,
     )
 
     bodyText = models.TextField(null=True, blank=True)
@@ -381,18 +400,13 @@ class Chapter(models.Model):
 
         return str(self.src).replace("OEBPS/", "")
 
-
     # ---------------------------------------------------------------------------
     def save(self, *args, **kwargs):
         # default playOrder is 0, but playOrder in toc.ncx should be 1 indexed
         set_order_last(
             self,
             "playOrder",
-            list(
-                Chapter.objects.filter(book=self.book).order_by(
-                    "playOrder"
-                )
-            ),
+            list(Chapter.objects.filter(book=self.book).order_by("playOrder")),
         )
 
         # playOrder MUST BE SEQUENTIAL FOR toc.ncx.
@@ -403,23 +417,21 @@ class Chapter(models.Model):
 
         super(Chapter, self).save(*args, **kwargs)
 
-# Category / Section becomes this 
+
+# Category / Section becomes this
 # # ===============================================================================
 class Section(models.Model):
 
     title = models.CharField(max_length=200)
     order = models.PositiveSmallIntegerField(null=True, blank=True)
     main_text = models.TextField(null=True, blank=True)
-    chapter = models.ForeignKey(
-        Chapter, on_delete=models.PROTECT
-    )    
+    chapter = models.ForeignKey(Chapter, on_delete=models.PROTECT)
     # Image. Can be blank/null, but I prefer not to.
-    #img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
+    # img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.PROTECT)
 
     # Is this related to a chapter in the book?
     # Cookbook structure: Section should be a chapter, but chapter might not be a section.
     # New travel structure: section is under chapter, in hierarchy
-
 
     # ---------------------------------------------------------------------------
     def __str__(self):
@@ -428,7 +440,8 @@ class Section(models.Model):
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = [
-            "chapter", "order",
+            "chapter",
+            "order",
         ]
 
 
@@ -438,9 +451,7 @@ class Subsection(models.Model):
 
     title = models.CharField(max_length=200, blank=True)
     order = models.PositiveSmallIntegerField(null=True, blank=True)
-    section = models.ForeignKey(
-        Section, on_delete=models.PROTECT
-    )
+    section = models.ForeignKey(Section, on_delete=models.PROTECT)
     priority = models.PositiveSmallIntegerField(null=True, blank=True)
     category_text = models.CharField(null=True, blank=True, max_length=200)
     main_text = models.TextField(null=True, blank=True)
@@ -461,7 +472,9 @@ class Subsection(models.Model):
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = [
-            "section", "priority", "order",
+            "section",
+            "priority",
+            "order",
         ]
 
 
@@ -509,5 +522,3 @@ class Subsection(models.Model):
 #         section_url = str((self.section.chapter.src)).replace("OEBPS/", "")
 #         recipe_url = section_url + ("#subsection-" + str(self.pk))
 #         return recipe_url
-
-

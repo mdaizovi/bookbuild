@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from ...models import Book
-from ...ebook_writer import EbookWriter
+from ...writer.ebook_writer import EbookWriter
 
 # python manage.py export_ebook --book 1
 # or

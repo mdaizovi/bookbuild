@@ -9,32 +9,26 @@ from collections import OrderedDict
 from django.conf import settings
 from django.template import Context, Template
 
-from .models import Book, Chapter, Image
-from .model_enum import ChapterTypeEnum
+from ..models import Book, Chapter, Image
+from ..model_enum import ChapterTypeChoices
 
-"""The code that actually builds the book.
-"""
-
-# -------------------------------------------------------------------------------
-def copyanything(src, dst):
-    try:
-        copytree(src, dst, ignore=ignore_patterns('*.DS_Store'))
-    except OSError as exc:  # python >2.5
-        if exc.errno == errno.ENOTDIR:
-            copy(src, dst)
-        else:
-            raise
-
+from .utils import (
+    copyanything,
+    cleanUp,
+    download_images_from_aws,
+    download_static_from_aws,
+)
+from .queries import BookQueries
 
 # ===============================================================================
 class EbookWriter:
     def __init__(self, book=None, get_assets=False):
         if not book:
-            book = Book.objects.get(pk=1)
+            book = BookQueries.get_book(pk=1)
         self.book = book
 
         self.CSS_SNIPPET = ""
-        for f in self.book.files.all():
+        for f in BookQueries.get_all_files(book=self.book):
             self.CSS_SNIPPET += (
                 '<link href="%s" rel="stylesheet" type="text/css"/>' % f.relative_url
             )
@@ -59,7 +53,7 @@ class EbookWriter:
             "title": self.book.title,
             "identifier": self.book.isbn or self.book.title,
             "creator": self.book.author_string,
-            #"publisher": "Team Kaffeeklatsch",
+            # "publisher": "Team Kaffeeklatsch",
             "date": time.strftime("%Y-%m-%d"),
             "language": self.book.language or "en",
             "subject": self.book.subject or "",
@@ -68,65 +62,6 @@ class EbookWriter:
             "type": "Text",
             "rights": "All rights reserved",
         }
-
-    # -------------------------------------------------------------------------------
-    def download_images_from_aws(self):
-        # connect to the bucket
-        s3_resource = boto3.resource("s3", region_name="us-east-1")
-        my_bucket = s3_resource.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
-        s3_root_folder_prefix = "media"  # bucket inside root folder
-        s3_folder_list = ["img"]  # root folder inside sub folders list
-
-        print("About to start downloading images")
-        for file in my_bucket.objects.filter(Prefix=s3_root_folder_prefix):
-            if any(s in file.key for s in s3_folder_list):
-                try:
-                    path, filename = os.path.split(file.key)
-                    new_home = os.path.join(settings.BASE_DIR, path)
-                    if not os.path.exists(new_home):
-                        try:
-                            os.makedirs(new_home)  # Creates dirs recurcivly
-                        except Exception as err:
-                            print("exception making directory: ", err)
-                    full_img_path = os.path.join(new_home, filename)
-                    s3_resource.meta.client.download_file(
-                        settings.AWS_STORAGE_BUCKET_NAME, file.key, full_img_path
-                    )
-                    print(file.key, " downloaded ")
-                except Exception as err:
-                    print("exception downloading file: ", err)
-        print("Done downloading images")
-
-    # -------------------------------------------------------------------------------
-    def download_static_from_aws(self):
-
-        # TODO i have no idea if this works.
-
-        # connect to the bucket
-        s3_resource = boto3.resource("s3", region_name="us-east-1")
-        my_bucket = s3_resource.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
-        s3_root_folder_prefix = "media/bookbuild"  # bucket inside root folder
-        s3_folder_list = ["static"]  # root folder inside sub folders list
-
-        print("About to start downloading static")
-        for file in my_bucket.objects.filter(Prefix=s3_root_folder_prefix):
-            if any(s in file.key for s in s3_folder_list):
-                try:
-                    path, filename = os.path.split(file.key)
-                    new_home = os.path.join(settings.BASE_DIR, path)
-                    if not os.path.exists(new_home):
-                        try:
-                            os.makedirs(new_home)  # Creates dirs recurcivly
-                        except Exception as err:
-                            print("exception making directory: ", err)
-                    full_img_path = os.path.join(new_home, filename)
-                    s3_resource.meta.client.download_file(
-                        settings.AWS_STORAGE_BUCKET_NAME, file.key, full_img_path
-                    )
-                    print(file.key, " downloaded ")
-                except Exception as err:
-                    print("exception downloading file: ", err)
-        print("Done downloading static")
 
     # -------------------------------------------------------------------------------
     def writeComponent(self, component_type, chapter=None):
@@ -147,64 +82,37 @@ class EbookWriter:
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS/001_cover.html"
             )
         elif component_type == "chapter" and chapter:
-            ctx.update({"chapter": chapter})
-            top5 = []
-            sections = []
-            # print(f"chapter: {chapter}")
+            top5 = BookQueries.get_chapter_top5(chapter=chapter)
+            ctx.update({"chapter": chapter, "top5": top5})
 
-            ctx.update({"top5":top5})
-
-            if chapter.section_set.all().count()>0:
+            if BookQueries.chapter_has_sections(chapter=chapter):
                 html_path_list = [
-                        settings.BASE_DIR,
-                        "templates",
-                        "ebook_exporter",
-                        self.book.book_type,
-                        "sectionBase.html",
-                ]                
-                for section in chapter.section_set.all():
-                    # print(f"section: {section}")
-                    top5 += [x for x in section.subsection_set.filter(priority__gte=5).order_by("order")]
+                    settings.BASE_DIR,
+                    "templates",
+                    "ebook_exporter",
+                    self.book.book_type,
+                    "sectionBase.html",
+                ]
+                sections = []
+                for section in BookQueries.get_all_chapter_sections(chapter):
+                    subsections = BookQueries.get_section_list_subsections(section)
                     sections.append(
-                        {
-                            "obj": section,
-                            "subsections": [x for x in section.subsection_set.filter(priority__lte=4).order_by("-priority", "order")],
-                        }
+                        {"obj": section, "subsections": subsections,}
                     )
+                ctx.update({"sections": sections})
 
-                def nonesorter(a):
-                    if not a.order:
-                        return 0
-                    return a.order
-                top5.sort(key=lambda x: nonesorter(x), reverse=True)
-                ctx.update({"sections":sections, "top5":top5})
-                
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
         elif component_type == "contents":
-            exclude = [ChapterTypeEnum.CHAPTER_TP, ChapterTypeEnum.CHAPTER_CR, ChapterTypeEnum.CHAPTER_C]
-            chapters_all = (
-                self.book.chapter_set.all()
-                .order_by("playOrder")
-                .exclude(chapter_type__in=exclude)
+            chapters_all = BookQueries.get_content_chapters(book=self.book)
+            chapters = BookQueries.build_chapter_section_ordered_dict(
+                chapters=chapters_all
             )
-            chapters = OrderedDict()
-            for c in chapters_all:
-                if c.section_set.all().count()>0:
-                    for section in chapter.section_set.all():
-                        chapters.update(
-                            {
-                                c: list(
-                                    section.subsection_set.all().order_by(
-                                        "order"
-                                    )
-                                )
-                            }
-                        )
-                else:
-                    chapters.update({c: []})
             ctx.update({"chapters": chapters})
-            chapter = Chapter.objects.filter(book=self.book, chapter_type=ChapterTypeEnum.CHAPTER_C).first()
-            html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
+
+            contents_chapter = BookQueries.get_contents_chapter(book=self.book)
+            html_destination = os.path.join(
+                self.BOOK_BASE_DIR, "Add2Epub", contents_chapter.src
+            )
 
         html_file = os.path.join(*html_path_list)
         if not os.path.exists(html_file):
@@ -236,7 +144,7 @@ class EbookWriter:
             "title",
             "identifier",
             "creator",
-            #"publisher",
+            # "publisher",
             "date",
             "language",
             "subject",
@@ -295,7 +203,7 @@ class EbookWriter:
         opf_str += "<item href='OEBPS/001_cover.html' id='HTML0' media-type='application/xhtml+xml'/>"
         spinelist.append("HTML0")
 
-        for c in Chapter.objects.filter(book=self.book):
+        for c in BookQueries.get_all_chapters(book=self.book):
             html_id = "HTML" + str(c.pk)
             spinelist.append(html_id)
             opf_str += (
@@ -340,7 +248,8 @@ class EbookWriter:
         toc_str += "<navPoint id='navPoint-1' playOrder='1'>"
         toc_str += "<navLabel><text>Cover</text></navLabel><content src='OEBPS/001_cover.html'/></navPoint>"
         self.book.sequentialize()
-        for c in list(self.book.chapter_set.all().order_by("playOrder")):
+
+        for c in BookQueries.get_all_chapters(book=self.book):
             toc_str += (
                 "<navPoint id='navPoint-"
                 + str(c.playOrder)
@@ -385,27 +294,9 @@ class EbookWriter:
             rmtree(book_dir)
 
     # -------------------------------------------------------------------------------
-    def cleanUp(self):
-        """
-        After epub is written,
-        delete files and folders I wrote dynamically to Add2Epub, so won't confuse and conflict.
-        NOTES:
-                os.remove() will remove a file.
-                os.rmdir() will remove an empty directory.
-                rmtree() will delete a directory and all its contents.
-        """
-
-        for f in self.FILES_TO_DELETE:
-            os.remove(f)
-        for f in self.FOLDERS_TO_DELETE:
-            rmtree(f)
-        print("All cleaned up!")
-
-    # -------------------------------------------------------------------------------
     def writeBook(self):
         """For some reason calling writeTOC() inside of buildNewEpub() makes the toc not work,
         but this is fine.
-        If contributor list given, will only do those contributor's sections.
         """
 
         # NOTE: I build book form whatever images and html i can find in OEBPS
@@ -417,10 +308,10 @@ class EbookWriter:
         # so url will be same.
 
         if self.get_assets:
-            self.download_images_from_aws()
-            self.download_static_from_aws()
+            download_images_from_aws()
+            download_static_from_aws()
 
-        imageList = Book.objects.get_images(self.book)
+        imageList = BookQueries.get_all_images(book=self.book)
         # make folder media
         if not os.path.exists(self.DESTINATION_MEDIA_PATH):
             os.makedirs(self.DESTINATION_MEDIA_PATH)
@@ -437,8 +328,7 @@ class EbookWriter:
                     settings.MEDIA_ROOT + "/img/" + i, self.DESTINATION_MEDIA_PATH
                 )
 
-        filelist = self.book.files.all()
-        for f in filelist:
+        for f in BookQueries.get_all_files(book=self.book):
             DESTINATION_FILE_PATH = os.path.join(
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", f.file_type
             )
@@ -451,21 +341,21 @@ class EbookWriter:
 
         self.writeComponent("cover")
 
-        for c in (
-            self.book.chapter_set.all()
-            .order_by("playOrder")
-            .exclude(chapter_type=ChapterTypeEnum.CHAPTER_C)
-        ):
+        for c in BookQueries.get_chapters_except_contents(book=self.book):
             self.writeComponent(component_type="chapter", chapter=c)
-        if self.book.book_type in ["CK", "TG"]:
-            if Chapter.objects.filter(chapter_type=ChapterTypeEnum.CHAPTER_C, book=self.book).exists():
-                self.writeComponent("contents")
+        # if self.book.book_type in ["CK", "TG"]:
+        #     contents_chapter =  BookQueries.get_contents_chapter(book=self.book)
+        #     if contents_chapter is not None:
+        #         self.writeComponent("contents")
 
         self.writeOPF()
         self.writeTOC()
         self.buildNewEpub(self.book.slugify_title())
 
-        self.cleanUp()
+        self.cleanUp(
+            files_to_delete=self.FILES_TO_DELETE,
+            folders_to_delete=self.FOLDERS_TO_DELETE,
+        )
 
 
 # python manage.py export_ebook --book 1  --get_assets
