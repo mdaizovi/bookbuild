@@ -1,16 +1,8 @@
 import boto3
-import codecs
 import errno
 import os
-import time
 from shutil import copy, copytree, ignore_patterns, make_archive, rmtree
-from collections import OrderedDict
-
 from django.conf import settings
-from django.template import Context, Template
-
-from ..models import Book, Chapter, Image
-from ..model_enum import ChapterTypeChoices
 
 
 def copyanything(src, dst):
@@ -21,7 +13,6 @@ def copyanything(src, dst):
             copy(src, dst)
         else:
             raise
-
 
 def cleanUp(files_to_delete=[], folders_to_delete=[]):
     """

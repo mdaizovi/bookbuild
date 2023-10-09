@@ -14,12 +14,19 @@ from .utils import (
 )
 from .queries import BookQueries
 
-# python manage.py export_ebook --book 1  --get_assets
+# FLO'S INSTRUCTIONS
+
+# virtualenv venvironment
+# cd..
+# pip install -r requirements.txt
+
+# c:\Python\bookbuild-main\bookbuild_src\
+# venvironment\Scripts\activate
+# python manage.py export_ebook --book 1
 
 
 # ===============================================================================
 class EbookWriter:
-
 
     # -------------------------------------------------------------------------------
     def writeComponent(self, component_type, chapter=None):
