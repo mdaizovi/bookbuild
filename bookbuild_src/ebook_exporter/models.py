@@ -20,6 +20,8 @@ from .model_enum import (
     ChapterTypeChoices,
 )
 
+img_pattern_files = os.listdir(settings.IMG_DIR)
+
 # MTDICT = [
 #     ("jpg", "image/jpeg"),
 #     ("html", "application/xhtml+xml"),
@@ -397,8 +399,21 @@ class Chapter(models.Model):
     # ---------------------------------------------------------------------------
     @property
     def chapter_url(self):
-
         return str(self.src).replace("OEBPS/", "")
+
+    @property
+    def chapter_img_urls(self):
+        print(f"searching {len(img_pattern_files)} image files for {self.title}")
+        # snake case
+        # & is a problem
+        lower_snake = self.title.lower().replace(" ", "_").replace("&", "and")
+        base_name_start = f"{lower_snake}_title__"
+        base_name_end = ".jpg"
+        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
+        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
+        return matching_files
+
+
 
     # ---------------------------------------------------------------------------
     def save(self, *args, **kwargs):

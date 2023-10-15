@@ -238,7 +238,6 @@ class EbookWriter:
 
         opf_str += "<manifest><item href='toc.ncx' id='ncx' media-type='application/x-dtbncx+xml'/>"
 
-        # TODO: # do I even need to list images in img directory? media ones show up just fine, but i never list them.
         for dirname, media_type in {
             "css": "text/css",
             "fonts": "application/vnd.ms-opentype",

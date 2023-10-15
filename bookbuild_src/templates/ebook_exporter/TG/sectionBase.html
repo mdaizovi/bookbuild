@@ -21,6 +21,11 @@
     <hr>
   {% endif %}
 
+  {% for i in chapter.chapter_img_urls %}
+    <img class = "full-page-img" src="{{ i }}"/>
+  {% endfor %}
+
+
   {% if chapter.bodyText %}
     <p>
       {{ chapter.bodyText|safe }}
