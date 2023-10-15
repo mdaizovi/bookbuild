@@ -21,3 +21,4 @@ bookbuild_src/importer/source/
 bookbuild_src/importer/export/export.docx
 bookbuild_src/db_backup/
 bookbuild_src/media/
+bookbuild_src/ebook_exporter/Add2Epub/OEBPS/images
