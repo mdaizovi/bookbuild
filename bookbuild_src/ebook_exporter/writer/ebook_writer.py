@@ -4,7 +4,6 @@ import time
 
 from django.conf import settings
 from django.template import Context, Template
-
 from .utils import (
     cleanUp,
     copyanything,
@@ -14,7 +13,7 @@ from .utils import (
 )
 from .queries import BookQueries
 
-# FLO'S INSTRUCTIONS
+# INSTRUCTIONS FOR FLO
 
 # virtualenv venvironment
 # cd..
