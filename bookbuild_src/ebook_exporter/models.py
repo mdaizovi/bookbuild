@@ -401,14 +401,25 @@ class Chapter(models.Model):
     def chapter_url(self):
         return str(self.src).replace("OEBPS/", "")
 
+
     @property
-    def chapter_img_urls(self):
-        print(f"searching {len(img_pattern_files)} image files for {self.title}")
+    def title_lower_snake(self):
         # snake case
         # & is a problem
-        lower_snake = self.title.lower().replace(" ", "_").replace("&", "and")
-        base_name_start = f"{lower_snake}_title__"
+        return self.title.lower().replace(" ", "_").replace("&", "and")
+
+    @property
+    def img_urls(self):
+        base_name_start = f"{self.title_lower_snake}_title__"
         base_name_end = ".jpg"
+        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
+        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
+        return matching_files
+
+    @property
+    def map_img_urls(self):
+        base_name_start = f"{self.title_lower_snake}_map__"
+        base_name_end = ".png"
         pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
         matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
         return matching_files
@@ -452,6 +463,20 @@ class Section(models.Model):
     def __str__(self):
         return "%s" % (self.title)
 
+    @property
+    def title_lower_snake(self):
+        # snake case
+        # & is a problem
+        return self.title.lower().replace(" ", "_").replace("&", "and")
+
+    @property
+    def img_urls(self):
+        base_name_start = f"{self.title_lower_snake}__"
+        base_name_end = ".jpg"
+        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
+        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
+        return matching_files
+
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = [
@@ -484,6 +509,20 @@ class Subsection(models.Model):
     def __str__(self):
         return "%s" % (self.title)
 
+    @property
+    def title_lower_snake(self):
+        # snake case
+        # & is a problem
+        return self.title.lower().replace(" ", "_").replace("&", "and")
+
+    @property
+    def img_urls(self):
+        base_name_start = f"{self.title_lower_snake}__"
+        base_name_end = ".jpg"
+        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
+        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
+        return matching_files
+    
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = [

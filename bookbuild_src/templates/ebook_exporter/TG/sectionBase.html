@@ -21,7 +21,7 @@
     <hr>
   {% endif %}
 
-  {% for i in chapter.chapter_img_urls %}
+  {% for i in chapter.img_urls %}
     <img class = "full-page-img" src="{{ i }}"/>
   {% endfor %}
 
@@ -51,18 +51,31 @@
       <span class="line">{{ section.obj.title|safe  }}</span>
     </h1>
 
+    {% for i in section.img_urls %}
+    <img class = "full-page-img" src="{{ i }}"/>
+    {% endfor %}
+
     {% for sub in section.subsections %}
       <h3>
         <span class="line">
           {{ sub.title|safe  }}
         </span>
       </h3>  
+      
+      {% for i in sub.img_urls %}
+      <img class = "full-page-img" src="{{ i }}"/>
+      {% endfor %}
+
       <p>
         {{ sub.main_text|safe }}
       </p>
     {% endfor %}
     <hr>
   <div class="page-end"></div>
+{% endfor %}
+
+{% for i in chapter.map_img_urls %}
+<img class = "full-page-img" src="{{ i }}"/>
 {% endfor %}
 
 </body>
