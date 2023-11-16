@@ -30,14 +30,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+# SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY ="django-insecure-pc(artegvh5m-#)6@rq44xny&dcc^5!2-8l*(9h^oij0^9+!x1"
 
 ENV_DEV = "dev"
 ENV_PROD = "prod"
-
-ENV_TYPE = env("ENV_TYPE")
-if not ENV_TYPE in (ENV_DEV, ENV_PROD):
-    raise ImproperlyConfigured("Invalid value for ENV_TYPE.")
+try:
+    ENV_TYPE = env("ENV_TYPE")
+except:
+    ENV_DEV = "dev"
+# if not ENV_TYPE in (ENV_DEV, ENV_PROD):
+#     raise ImproperlyConfigured("Invalid value for ENV_TYPE.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if ENV_TYPE == ENV_DEV else False

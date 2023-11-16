@@ -94,6 +94,7 @@ def make_src_file_name(obj):
     Don't save in this function, will be called @ save.
     """
     base_str = "OEBPS/0"
+    #base_str = f"OEBPS{os.sep}0"
     if obj.playOrder < 10:
         base_str += "0"
     base_str += str(obj.playOrder) + "_"
@@ -162,11 +163,13 @@ class StaticFile(models.Model):
     def relative_url(self):
         """url to use in ebook.
         """
+        # i thik this doesn't need os.sep?
         return self.file_type + "/" + self.filename
 
     # ---------------------------------------------------------------------------
     @property
     def filename(self):
+        #return self.upload.name.split(os.sep)[-1]
         return self.upload.name.split("/")[-1]
 
 

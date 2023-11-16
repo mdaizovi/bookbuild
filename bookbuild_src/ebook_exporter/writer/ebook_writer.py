@@ -124,9 +124,9 @@ class EbookWriter:
                 local_location = os.path.join(settings.MEDIA_ROOT, str(i.img.name))
                 copyanything(local_location, self.DESTINATION_MEDIA_PATH)
         else:
-            for i in os.listdir(settings.MEDIA_ROOT + "/img/"):
+            for i in os.listdir(settings.MEDIA_ROOT + f"{os.sep}img{os.sep}"):
                 copyanything(
-                    settings.MEDIA_ROOT + "/img/" + i, self.DESTINATION_MEDIA_PATH
+                    settings.MEDIA_ROOT + f"{os.sep}img{os.sep}" + i, self.DESTINATION_MEDIA_PATH
                 )
 
         for f in BookQueries.get_all_files(book=self.book):
@@ -261,9 +261,9 @@ class EbookWriter:
                 )
 
         if self.book.cover:
-            cover_filename = "media/" + self.book.cover.get_file_name()
+            cover_filename = f"media{os.sep}" + self.book.cover.get_file_name()
         else:
-            cover_filename = "images/cover.jpg"
+            cover_filename = f"images{os.sep}cover.jpg"
         opf_str += (
             "<item href='OEBPS/"
             + cover_filename
