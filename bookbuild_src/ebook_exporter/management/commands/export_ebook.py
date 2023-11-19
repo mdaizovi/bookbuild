@@ -6,7 +6,8 @@ from ...writer.ebook_writer import EbookWriter
 # python manage.py export_ebook --book 1
 # or
 # python manage.py export_ebook --book 1 --get_assets
-
+# or
+# python manage.py export_ebook --book 1 --verbose
 
 class Command(BaseCommand):
     help = "Writes book from database to ebook"
@@ -18,6 +19,12 @@ class Command(BaseCommand):
             "--get_assets",
             action="store_true",
             help="Add if you need to download assets (images, css, etc) from AWS",
+        )
+
+        parser.add_argument(
+            "--verbose",
+            action="store_true",
+            help="Add if you want output on console",
         )
 
     def handle(self, *args, **options):
@@ -36,7 +43,12 @@ class Command(BaseCommand):
         else:
             get_assets = False
 
-        #print("--Starting to export %s" % (book.title))
-        writer = EbookWriter(book=book, get_assets=get_assets)
+        if options["verbose"]:
+            verbose = options["verbose"]
+        else:
+            verbose = False
+
+        print("--Starting to export %s" % (book.title)) if verbose else None
+        writer = EbookWriter(book=book, get_assets=get_assets, verbose=verbose)
         writer.writeBook()
-        #print("\n\n--Finished exporting %s" % (book.title))
+        print("\n\n--Finished exporting %s" % (book.title)) if verbose else None

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import codecs
 import os
 import time
@@ -41,7 +42,8 @@ class EbookWriter:
         ]
 
         if component_type == "cover":
-            #print("writing cover")
+            
+            print("writing cover") if self.verbose else None
             html_destination = os.path.join(
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS/001_cover.html"
             )
@@ -109,8 +111,8 @@ class EbookWriter:
         # so url will be same.
 
         if self.get_assets:
-            download_images_from_aws()
-            download_static_from_aws()
+            download_images_from_aws(verbose=self.verbose)
+            download_static_from_aws(verbose=self.verbose)
 
         imageList = BookQueries.get_all_images(book=self.book)
         # make folder media
@@ -161,7 +163,7 @@ class EbookWriter:
 
     #Prob will nevr need to edit or look at this crap below.
     # -------------------------------------------------------------------------------
-    def __init__(self, book=None, get_assets=False):
+    def __init__(self, book=None, get_assets=False, verbose=False):
         if not book:
             book = BookQueries.get_book(pk=1)
         self.book = book
@@ -175,6 +177,10 @@ class EbookWriter:
 
         self.get_assets = (
             get_assets  # whether or not to download images, css, etc from aws
+        )
+
+        self.verbose = (
+            verbose  # whether or not to log what's up on console
         )
 
         self.BOOK_BASE_DIR = os.path.join(settings.BASE_DIR, "ebook_exporter")
@@ -292,7 +298,7 @@ class EbookWriter:
 
         opf_str += "<guide><reference href='OEBPS/001_cover.html' title='cover' type='cover'/></guide></package>"
 
-        #print("done writing everyhting?")
+        print("done writing everyhting?") if self.verbose else None
 
         with open(self.OPF_FILE, "w") as opf:
             opf.write(opf_str)
