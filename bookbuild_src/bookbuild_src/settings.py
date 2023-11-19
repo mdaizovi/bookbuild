@@ -175,3 +175,5 @@ STATICFILES_DIRS = ["staticfiles"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 IMG_DIR = os.path.join(BASE_DIR, "ebook_exporter", "Add2Epub", "OEBPS","images")
+
+DEFAULT_CHARSET = "utf-8"

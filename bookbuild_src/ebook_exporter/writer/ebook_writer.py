@@ -68,6 +68,8 @@ class EbookWriter:
                 ctx.update({"sections": sections})
 
             html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src)
+            # if the above is still a problem, consider putting decode everywhere, like below.
+            # html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src.decode('utf-8')
         elif component_type == "contents":
             chapters_all = BookQueries.get_content_chapters(book=self.book)
             chapters = BookQueries.build_chapter_section_ordered_dict(
