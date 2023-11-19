@@ -40,7 +40,7 @@ def download_images_from_aws():
     s3_root_folder_prefix = "media"  # bucket inside root folder
     s3_folder_list = ["img"]  # root folder inside sub folders list
 
-    print("About to start downloading images")
+    # print("About to start downloading images")
     for file in my_bucket.objects.filter(Prefix=s3_root_folder_prefix):
         if any(s in file.key for s in s3_folder_list):
             try:
@@ -55,10 +55,10 @@ def download_images_from_aws():
                 s3_resource.meta.client.download_file(
                     settings.AWS_STORAGE_BUCKET_NAME, file.key, full_img_path
                 )
-                print(file.key, " downloaded ")
+                # print(file.key, " downloaded ")
             except Exception as err:
                 print("exception downloading file: ", err)
-    print("Done downloading images")
+    # print("Done downloading images")
 
 
 def download_static_from_aws():
@@ -71,7 +71,7 @@ def download_static_from_aws():
     s3_root_folder_prefix = "media/bookbuild"  # bucket inside root folder
     s3_folder_list = ["static"]  # root folder inside sub folders list
 
-    print("About to start downloading static")
+    # print("About to start downloading static")
     for file in my_bucket.objects.filter(Prefix=s3_root_folder_prefix):
         if any(s in file.key for s in s3_folder_list):
             try:
@@ -86,7 +86,7 @@ def download_static_from_aws():
                 s3_resource.meta.client.download_file(
                     settings.AWS_STORAGE_BUCKET_NAME, file.key, full_img_path
                 )
-                print(file.key, " downloaded ")
+                # print(file.key, " downloaded ")
             except Exception as err:
                 print("exception downloading file: ", err)
-    print("Done downloading static")
+    # print("Done downloading static")

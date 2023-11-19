@@ -36,7 +36,7 @@ class Command(BaseCommand):
         else:
             get_assets = False
 
-        print("--Starting to export %s" % (book.title))
+        #print("--Starting to export %s" % (book.title))
         writer = EbookWriter(book=book, get_assets=get_assets)
         writer.writeBook()
-        print("\n\n--Finished exporting %s" % (book.title))
+        #print("\n\n--Finished exporting %s" % (book.title))

@@ -41,7 +41,7 @@ class EbookWriter:
         ]
 
         if component_type == "cover":
-            print("writing cover")
+            #print("writing cover")
             html_destination = os.path.join(
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS/001_cover.html"
             )
@@ -292,7 +292,7 @@ class EbookWriter:
 
         opf_str += "<guide><reference href='OEBPS/001_cover.html' title='cover' type='cover'/></guide></package>"
 
-        print("done writing everyhting?")
+        #print("done writing everyhting?")
 
         with open(self.OPF_FILE, "w") as opf:
             opf.write(opf_str)
