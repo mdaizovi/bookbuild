@@ -32,6 +32,7 @@ From here, `words that looks like this` are terminal commands
 You'll need to download the db.sqlite from pythonanywhere and put it in
 `bookbuild/bookbuild_src` on your local environment
 
+## GIT - making changes to the code
 ### To push your changes
 
 make a new branch:
@@ -59,21 +60,13 @@ then push to repo
 it will not work if you have local changes. If that's an issue you might need to make a throaway branch so you can pull from origin, and deal with it later (maybe manually bring your changes over)
 one solution:
 `git checkout -b some-branch-name`
+
 `git add .`
+
 `git commit -m"<your message>"`
+
 and then
+
 `git checkout main`
+
 `git pull`
-
-
-#### Common Problems
-
-##### XXX Doesn't Exist
-
-sadly you can't create new related items (Category, Neighborhood, etc) through the import. If you run into "Neighborhood doesn't exist" you need to create that Neighborhood and try again.
-
-##### get() returned more than one Blob -- it returned 2
-
-We identify Blobs by title and if you have more than 1 with the same title you need to remove them form the csv and add them manually. The only way to avoid this would be to identify in a different way, like title and category. But then you'll have problems with changing those. Or we could export with IDs and keep add those to your sheet, then change ID as the identifier. But then you need to keep hem straight.
-
-## GIT - making changes to the code
