@@ -38,7 +38,7 @@ ENV_PROD = "prod"
 try:
     ENV_TYPE = env("ENV_TYPE")
 except:
-    ENV_DEV = "dev"
+    ENV_TYPE = "dev"
 # if not ENV_TYPE in (ENV_DEV, ENV_PROD):
 #     raise ImproperlyConfigured("Invalid value for ENV_TYPE.")
 
@@ -143,7 +143,6 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # MEDIA_ROOT = os.path.join(BASE_DIR, "media") if ENV_TYPE == ENV_DEV else None
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Reminder: edit the files in STATICFILES_DIRS. the ones in static are auto generated.
 STATICFILES_DIRS = ["staticfiles"]
 
