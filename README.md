@@ -59,6 +59,7 @@ then push to repo
 
 it will not work if you have local changes. If that's an issue you might need to make a throaway branch so you can pull from origin, and deal with it later (maybe manually bring your changes over)
 one solution:
+
 `git checkout -b some-branch-name`
 
 `git add .`
