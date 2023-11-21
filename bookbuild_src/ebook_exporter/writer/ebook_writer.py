@@ -91,7 +91,7 @@ class EbookWriter:
         f = codecs.open(html_file, "r")
         template_html = f.read()
         template = Template(template_html)
-        f = open(html_destination, "w")
+        f = open(html_destination, "w", encoding="utf-8")
         f.write(template.render(ctx))
         # Add html filename to list of files to clean up.
         self.FILES_TO_DELETE.append(html_destination)
