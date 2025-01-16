@@ -16,67 +16,57 @@
 
   {% if chapter.intro %}
     <p>
-      {{ chapter.intro|safe }}
+      {% with text=chapter.intro|safe %}
+        {{text|linebreaks}}
+      {% endwith %}
     </p>
     <hr>
   {% endif %}
 
-  {% for i in chapter.img_urls %}
-    <img class = "full-page-img" src="{{ i }}"/>
-  {% endfor %}
-
-
-  {% if chapter.bodyText %}
-    <p>
-      {{ chapter.bodyText|safe }}
-    </p>
-    <hr>
+  {% if chapter.img_url|length > 0 %}
+    <img class="full-page-img" src="{{ chapter.img_url }}"/>
   {% endif %}
   
 
-  {% for sub in top5 %}
-    <h3>
-      <span class="line">{{ sub.title|safe  }}</span>
-    </h3>  
+  {% if chapter.bodyText %}
     <p>
-      {{ sub.main_text|safe }}
+      {% with text=chapter.bodyText|safe %}
+        {{text|linebreaks}}
+      {% endwith %}
     </p>
+    <hr>
+  {% endif %}
+
+  {% for sub in top5 %}
+    {% with component=sub %}
+      {% include "ebook_exporter/TG/subsection_snippet.html" with heading_level="h3" %}
+    {% endwith %}
   {% endfor %}
 
 
   {% for section in sections %}
     <span class="anchor" id="section-{{section.obj.pk}}"></span>
     <div class="page1"></div>
-    <h1>
-      <span class="line">{{ section.obj.title|safe  }}</span>
-    </h1>
-
-    {% for i in section.img_urls %}
-    <img class = "full-page-img" src="{{ i }}"/>
-    {% endfor %}
+   
+  {% with component=section %}
+    {% include "ebook_exporter/TG/image_snippet.html" with heading_level="h1" %}
+  {% endwith %}
 
     {% for sub in section.subsections %}
-      <h3>
-        <span class="line">
-          {{ sub.title|safe  }}
-        </span>
-      </h3>  
-      
-      {% for i in sub.img_urls %}
-      <img class = "full-page-img" src="{{ i }}"/>
-      {% endfor %}
-
-      <p>
-        {{ sub.main_text|safe }}
-      </p>
+      {% with component=sub %}
+        {% include "ebook_exporter/TG/subsection_snippet.html" with heading_level="h3" %}
+      {% endwith %}
     {% endfor %}
-    <hr>
+
+  <hr>
   <div class="page-end"></div>
 {% endfor %}
 
-{% for i in chapter.map_img_urls %}
-<img class = "full-page-img" src="{{ i }}"/>
-{% endfor %}
+
+{% if chapter.map_img_url|length > 0 %}
+  <img class="full-page-img" src="{{ chapter.map_img_url }}"/>
+{% endif %}
+
 
 </body>
 </html>

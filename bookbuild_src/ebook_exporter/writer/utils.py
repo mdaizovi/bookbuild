@@ -14,6 +14,7 @@ def copyanything(src, dst):
         else:
             raise
 
+
 def cleanUp(files_to_delete=[], folders_to_delete=[]):
     """
     After epub is written,
@@ -28,6 +29,7 @@ def cleanUp(files_to_delete=[], folders_to_delete=[]):
         os.remove(f)
     for f in folders_to_delete:
         rmtree(f)
+
 
 def compress(newBookDir, book_dir):
     make_archive(newBookDir, "zip", book_dir)

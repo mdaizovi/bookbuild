@@ -4,10 +4,11 @@ from ...models import Book
 from ...writer.ebook_writer import EbookWriter
 
 # python manage.py export_ebook --book 1
-# or
+# or BUT 555 tips does not have any aws buckets, get_assets does nothing
 # python manage.py export_ebook --book 1 --get_assets
 # or
 # python manage.py export_ebook --book 1 --verbose
+
 
 class Command(BaseCommand):
     help = "Writes book from database to ebook"
@@ -22,9 +23,7 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--verbose",
-            action="store_true",
-            help="Add if you want output on console",
+            "--verbose", action="store_true", help="Add if you want output on console",
         )
 
     def handle(self, *args, **options):

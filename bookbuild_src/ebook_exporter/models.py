@@ -1,11 +1,9 @@
 import os
 import re
-import requests
 
-from bs4 import BeautifulSoup
+# import requests
 
 from django.core.validators import MinValueValidator
-from django.urls import reverse
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
@@ -19,8 +17,6 @@ from .model_enum import (
     MediaTypeChoices,
     ChapterTypeChoices,
 )
-
-img_pattern_files = os.listdir(settings.IMG_DIR)
 
 # MTDICT = [
 #     ("jpg", "image/jpeg"),
@@ -94,7 +90,7 @@ def make_src_file_name(obj):
     Don't save in this function, will be called @ save.
     """
     base_str = "OEBPS/0"
-    #base_str = f"OEBPS{os.sep}0"
+    # base_str = f"OEBPS{os.sep}0"
     if obj.playOrder < 10:
         base_str += "0"
     base_str += str(obj.playOrder) + "_"
@@ -107,6 +103,17 @@ def replace_caps(caps_str):
     if caps_str.isupper():
         caps_str = caps_str.lower()
     return caps_str
+
+
+def standardize_text_breaks(text):
+    line_break = "\r\n"
+    # Replace 3 or more consecutive line breaks with 1 line break
+    text = re.sub(f"({re.escape(line_break)}){{3,}}", line_break, text)
+    # Replace 2 consecutive line breaks with 1 line break
+    text = re.sub(f"({re.escape(line_break)}){{2}}", line_break, text)
+    # Replace all single line breaks with 2 line breaks
+    text = text.replace(line_break, line_break * 2)
+    return text
 
 
 # ===============================================================================
@@ -122,6 +129,15 @@ class Person(models.Model):
     description = models.TextField(null=True, blank=True)
 
     # ---------------------------------------------------------------------------
+
+    def save(self, *args, **kwargs):
+        for f in ["description"]:
+            v = getattr(self, f)
+            if v is not None:
+                cleaned = standardize_text_breaks(v)
+                setattr(self, f, cleaned)
+        super(Person, self).save(*args, **kwargs)
+
     def __str__(self):
         if self.fname:
             return "%s %s" % (self.fname, self.lname)
@@ -169,7 +185,7 @@ class StaticFile(models.Model):
     # ---------------------------------------------------------------------------
     @property
     def filename(self):
-        #return self.upload.name.split(os.sep)[-1]
+        # return self.upload.name.split(os.sep)[-1]
         return self.upload.name.split("/")[-1]
 
 
@@ -295,6 +311,15 @@ class Book(models.Model):
     objects = BookManager()
 
     # ---------------------------------------------------------------------------
+
+    def save(self, *args, **kwargs):
+        for f in ["description"]:
+            v = getattr(self, f)
+            if v is not None:
+                cleaned = standardize_text_breaks(v)
+                setattr(self, f, cleaned)
+        super(Book, self).save(*args, **kwargs)
+
     def __str__(self):
         return "%s" % (self.title)
 
@@ -389,6 +414,7 @@ class Chapter(models.Model):
     bodyText = models.TextField(null=True, blank=True)
 
     # ---------------------------------------------------------------------------
+
     def __str__(self):
         return "%s. %s " % (self.playOrder, self.title)
 
@@ -404,7 +430,6 @@ class Chapter(models.Model):
     def chapter_url(self):
         return str(self.src).replace("OEBPS/", "")
 
-
     @property
     def title_lower_snake(self):
         # snake case
@@ -412,22 +437,45 @@ class Chapter(models.Model):
         return self.title.lower().replace(" ", "_").replace("&", "and")
 
     @property
-    def img_urls(self):
-        base_name_start = f"{self.title_lower_snake}_title__"
+    def img_url(self):
+        # base_name_start = f"{self.title_lower_snake}_title__"
+        base_name_start = f"{self.title_lower_snake}__"
         base_name_end = ".jpg"
-        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
-        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
-        return matching_files
+        pattern = re.compile(
+            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
+        )
+        try:
+            img_pattern_files = os.listdir(
+                f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
+            )
+            matching_files = [
+                f"images{os.sep}{self.title_lower_snake}{os.sep}{filename}"
+                for filename in img_pattern_files
+                if pattern.match(filename)
+            ]
+            return matching_files[0]
+        except (FileNotFoundError, IndexError):
+            return []
 
     @property
-    def map_img_urls(self):
+    def map_img_url(self):
         base_name_start = f"{self.title_lower_snake}_map__"
         base_name_end = ".png"
-        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
-        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
-        return matching_files
-
-
+        pattern = re.compile(
+            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}"
+        )  # Construct the regex pattern
+        try:
+            img_pattern_files = os.listdir(
+                f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
+            )
+            matching_files = [
+                f"images{os.sep}{self.title_lower_snake}{os.sep}{filename}"
+                for filename in img_pattern_files
+                if pattern.match(filename)
+            ]
+            return matching_files[0]
+        except (FileNotFoundError, IndexError):
+            return []
 
     # ---------------------------------------------------------------------------
     def save(self, *args, **kwargs):
@@ -443,6 +491,12 @@ class Chapter(models.Model):
 
         if not self.src:
             self.src = make_src_file_name(self)
+
+        for f in ["intro", "bodyText"]:
+            v = getattr(self, f)
+            if v is not None:
+                cleaned = standardize_text_breaks(v)
+                setattr(self, f, cleaned)
 
         super(Chapter, self).save(*args, **kwargs)
 
@@ -463,6 +517,15 @@ class Section(models.Model):
     # New travel structure: section is under chapter, in hierarchy
 
     # ---------------------------------------------------------------------------
+
+    def save(self, *args, **kwargs):
+        for f in ["main_text"]:
+            v = getattr(self, f)
+            if v is not None:
+                cleaned = standardize_text_breaks(v)
+                setattr(self, f, cleaned)
+        super(Section, self).save(*args, **kwargs)
+
     def __str__(self):
         return "%s" % (self.title)
 
@@ -473,12 +536,23 @@ class Section(models.Model):
         return self.title.lower().replace(" ", "_").replace("&", "and")
 
     @property
-    def img_urls(self):
+    def img_url(self):
         base_name_start = f"{self.title_lower_snake}__"
         base_name_end = ".jpg"
-        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
-        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
-        return matching_files
+        pattern = re.compile(
+            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
+        )
+        image_dir = f"{settings.IMG_DIR}{os.sep}{self.chapter.title_lower_snake}"
+        try:
+            img_pattern_files = os.listdir(image_dir)
+            matching_files = [
+                f"images{os.sep}{self.chapter.title_lower_snake}{os.sep}{filename}"
+                for filename in img_pattern_files
+                if pattern.match(filename)
+            ]
+            return matching_files[0]
+        except (FileNotFoundError, IndexError):
+            return []
 
     # ---------------------------------------------------------------------------
     class Meta:
@@ -509,6 +583,15 @@ class Subsection(models.Model):
     # text = models.TextField(null=True, blank=True)
 
     # ---------------------------------------------------------------------------
+
+    def save(self, *args, **kwargs):
+        for f in ["main_text", "footer_text"]:
+            v = getattr(self, f)
+            if v is not None:
+                cleaned = standardize_text_breaks(v)
+                setattr(self, f, cleaned)
+        super(Subsection, self).save(*args, **kwargs)
+
     def __str__(self):
         return "%s" % (self.title)
 
@@ -519,13 +602,25 @@ class Subsection(models.Model):
         return self.title.lower().replace(" ", "_").replace("&", "and")
 
     @property
-    def img_urls(self):
+    def img_url(self):
         base_name_start = f"{self.title_lower_snake}__"
         base_name_end = ".jpg"
-        pattern = re.compile(f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}")  # Construct the regex pattern
-        matching_files = [f"images{os.sep}{filename}" for filename in img_pattern_files if pattern.match(filename)]
-        return matching_files
-    
+        pattern = re.compile(
+            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
+        )
+        try:
+            img_pattern_files = os.listdir(
+                f"{settings.IMG_DIR}{os.sep}{self.section.chapter.title_lower_snake}"
+            )
+            matching_files = [
+                f"images{os.sep}{self.section.chapter.title_lower_snake}{os.sep}{filename}"
+                for filename in img_pattern_files
+                if pattern.match(filename)
+            ]
+            return matching_files[0]
+        except (FileNotFoundError, IndexError):
+            return []
+
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = [

@@ -1,0 +1,6 @@
+{% include "ebook_exporter/TG/image_snippet.html" with heading_level="h3" %}
+  <p style="font-style: italic;">
+    {% with text=component.footer_text|safe %}
+      {{text|linebreaks}}
+    {% endwith %}
+  </p>   

@@ -1,0 +1,17 @@
+<div style="page-break-inside: avoid; -webkit-page-break-inside: avoid;">
+  {% if component.img_url|length > 0 %}
+      <img class="full-page-img" style="padding-top: 2em;" src="{{ component.img_url }}"/>
+  {% endif %}
+  
+  <{{ heading_level|default:"h3" }}>
+    <span class="line">{{ component.title|safe }}</span>
+  </{{ heading_level|default:"h3" }}>  
+</div>
+  
+<p>
+  {% with text=component.main_text|safe %}
+    {{  text|linebreaks }}
+  {% endwith %}
+</p>
+
+

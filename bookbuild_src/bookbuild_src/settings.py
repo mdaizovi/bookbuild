@@ -31,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = env("SECRET_KEY")
-SECRET_KEY ="django-insecure-pc(artegvh5m-#)6@rq44xny&dcc^5!2-8l*(9h^oij0^9+!x1"
+SECRET_KEY = "django-insecure-pc(artegvh5m-#)6@rq44xny&dcc^5!2-8l*(9h^oij0^9+!x1"
 
 ENV_DEV = "dev"
 ENV_PROD = "prod"
@@ -85,7 +85,7 @@ ROOT_URLCONF = "bookbuild_src.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates"),],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -146,6 +146,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Reminder: edit the files in STATICFILES_DIRS. the ones in static are auto generated.
 STATICFILES_DIRS = ["staticfiles"]
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+IMG_DIR = os.path.join(BASE_DIR, "ebook_exporter", "Add2Epub", "OEBPS", "images")
+DEFAULT_CHARSET = "utf-8"
+
 # AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
 # AWS_S3_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
@@ -170,9 +174,3 @@ STATICFILES_DIRS = ["staticfiles"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-IMG_DIR = os.path.join(BASE_DIR, "ebook_exporter", "Add2Epub", "OEBPS","images")
-
-DEFAULT_CHARSET = "utf-8"

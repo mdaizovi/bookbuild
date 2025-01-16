@@ -42,7 +42,7 @@ class EbookWriter:
         ]
 
         if component_type == "cover":
-            
+
             print("writing cover") if self.verbose else None
             html_destination = os.path.join(
                 self.BOOK_BASE_DIR, "Add2Epub", "OEBPS/001_cover.html"
@@ -97,14 +97,14 @@ class EbookWriter:
         self.FILES_TO_DELETE.append(html_destination)
 
         return template.render(ctx)
-    
+
     # -------------------------------------------------------------------------------
     def writeBook(self):
         """For some reason calling writeTOC() inside of buildNewEpub() makes the toc not work,
         but this is fine.
         """
 
-        # NOTE: I build book form whatever images and html i can find in OEBPS
+        # NOTE: I build book from whatever images and html i can find in Add2Epub/OEBPS
 
         # by the time i get here, html and images should be ready.
 
@@ -113,6 +113,7 @@ class EbookWriter:
         # so url will be same.
 
         if self.get_assets:
+            # Note: 555 tips does not have any aws buckets
             download_images_from_aws(verbose=self.verbose)
             download_static_from_aws(verbose=self.verbose)
 
@@ -120,9 +121,12 @@ class EbookWriter:
         # make folder media
         if not os.path.exists(self.DESTINATION_MEDIA_PATH):
             os.makedirs(self.DESTINATION_MEDIA_PATH)
-        # TODO: write this better later. for now I'm just including all images in Flo's book.
-        # if len(imageList) > 0:
-        if len(imageList) > 1:
+
+        # ... NOTE this is irrelevant for 555 tips
+        # check the properties img_urls and map_img_urls in Chapter, Section, Subsection to see naming convention
+        # all all are jpg except maps which are png
+        # NOTE 2: we start with 'Upper Sukhumvit'
+        if len(imageList) > 1:  # it prob has 1 img, the cover.
             for i in imageList:
                 # NOTE using i.img.file always called online location and didn't work offline.
                 local_location = os.path.join(settings.MEDIA_ROOT, str(i.img.name))
@@ -130,7 +134,8 @@ class EbookWriter:
         else:
             for i in os.listdir(settings.MEDIA_ROOT + f"{os.sep}img{os.sep}"):
                 copyanything(
-                    settings.MEDIA_ROOT + f"{os.sep}img{os.sep}" + i, self.DESTINATION_MEDIA_PATH
+                    settings.MEDIA_ROOT + f"{os.sep}img{os.sep}" + i,
+                    self.DESTINATION_MEDIA_PATH,
                 )
 
         for f in BookQueries.get_all_files(book=self.book):
@@ -143,6 +148,7 @@ class EbookWriter:
                 settings.MEDIA_ROOT, "ebook_exporter", "static", f.filename
             )
             copyanything(local_location, DESTINATION_FILE_PATH)
+        # end image and naming convention note
 
         self.writeComponent("cover")
 
@@ -162,8 +168,7 @@ class EbookWriter:
             folders_to_delete=self.FOLDERS_TO_DELETE,
         )
 
-
-    #Prob will nevr need to edit or look at this crap below.
+    # Prob will nevr need to edit or look at this crap below.
     # -------------------------------------------------------------------------------
     def __init__(self, book=None, get_assets=False, verbose=False):
         if not book:
@@ -181,9 +186,7 @@ class EbookWriter:
             get_assets  # whether or not to download images, css, etc from aws
         )
 
-        self.verbose = (
-            verbose  # whether or not to log what's up on console
-        )
+        self.verbose = verbose  # whether or not to log what's up on console
 
         self.BOOK_BASE_DIR = os.path.join(settings.BASE_DIR, "ebook_exporter")
         self.DESTINATION_MEDIA_PATH = os.path.join(
