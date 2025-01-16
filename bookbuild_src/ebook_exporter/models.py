@@ -130,14 +130,6 @@ class Person(models.Model):
 
     # ---------------------------------------------------------------------------
 
-    def save(self, *args, **kwargs):
-        for f in ["description"]:
-            v = getattr(self, f)
-            if v is not None:
-                cleaned = standardize_text_breaks(v)
-                setattr(self, f, cleaned)
-        super(Person, self).save(*args, **kwargs)
-
     def __str__(self):
         if self.fname:
             return "%s %s" % (self.fname, self.lname)
@@ -312,14 +304,6 @@ class Book(models.Model):
 
     # ---------------------------------------------------------------------------
 
-    def save(self, *args, **kwargs):
-        for f in ["description"]:
-            v = getattr(self, f)
-            if v is not None:
-                cleaned = standardize_text_breaks(v)
-                setattr(self, f, cleaned)
-        super(Book, self).save(*args, **kwargs)
-
     def __str__(self):
         return "%s" % (self.title)
 
@@ -492,13 +476,7 @@ class Chapter(models.Model):
         if not self.src:
             self.src = make_src_file_name(self)
 
-        for f in ["intro", "bodyText"]:
-            v = getattr(self, f)
-            if v is not None:
-                cleaned = standardize_text_breaks(v)
-                setattr(self, f, cleaned)
-
-        super(Chapter, self).save(*args, **kwargs)
+        return super(Chapter, self).save(*args, **kwargs)
 
 
 # Category / Section becomes this
@@ -517,14 +495,6 @@ class Section(models.Model):
     # New travel structure: section is under chapter, in hierarchy
 
     # ---------------------------------------------------------------------------
-
-    def save(self, *args, **kwargs):
-        for f in ["main_text"]:
-            v = getattr(self, f)
-            if v is not None:
-                cleaned = standardize_text_breaks(v)
-                setattr(self, f, cleaned)
-        super(Section, self).save(*args, **kwargs)
 
     def __str__(self):
         return "%s" % (self.title)
@@ -583,14 +553,6 @@ class Subsection(models.Model):
     # text = models.TextField(null=True, blank=True)
 
     # ---------------------------------------------------------------------------
-
-    def save(self, *args, **kwargs):
-        for f in ["main_text", "footer_text"]:
-            v = getattr(self, f)
-            if v is not None:
-                cleaned = standardize_text_breaks(v)
-                setattr(self, f, cleaned)
-        super(Subsection, self).save(*args, **kwargs)
 
     def __str__(self):
         return "%s" % (self.title)
