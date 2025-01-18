@@ -6,24 +6,15 @@
   </head>
 
   <body>
-    <p class="Chapter-Title">CONTENTS</p>
+    <p class="Chapter-Title">INDEX</p>
 
-    {% for key, value in chapters.items %}
-
-      <p class="bm-title2">
-        <a href = "{{key.chapter_url}}">
-          {{key.title|upper}}
-        </a>
-      </p>
-
-      {% for r in value %}
-        <p class = "content-recipe-title">
-          <a href = "{{r.internal_url}}">
-            {{r.title|safe}}
+    {% for item in items %}
+        <p class="content-recipe-title">
+          {{ forloop.counter }}. 
+          <a href="{{item.internal_url}}">
+            {{item.title|safe}} <span style="font-style: italic;">({{item.section.chapter.title}})</span>
           </a>
         </p>
-      {%endfor%}
-
     {% endfor %}
 
     <div class = "page"></div>

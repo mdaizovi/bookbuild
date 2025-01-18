@@ -4,14 +4,21 @@
   {% endif %}
   
   <{{ heading_level|default:"h3" }}>
-    <span class="line">{{ component.title|safe }}</span>
+    <span class="line dark-blue">{{ component.title|safe }}</span>
   </{{ heading_level|default:"h3" }}>  
 </div>
   
-<p>
   {% with text=component.main_text|safe %}
+  {% if component.category_text %}
+  <span class = "dark-blue" style = "display: inline;">
+    {{ component.category_text|upper }}
+  </span>
+  <div style = "margin-top:-1em;">
+  {% else %}
+  <div>
+  {% endif %}
     {{  text|linebreaks }}
+    </div>
   {% endwith %}
-</p>
 
 

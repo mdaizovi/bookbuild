@@ -45,11 +45,12 @@
 
 
   {% for section in sections %}
-    <span class="anchor" id="section-{{section.obj.pk}}"></span>
+    <span class="anchor"></span>
     <div class="page1"></div>
+    <h1>{{ section.title }}</h1>
    
   {% with component=section %}
-    {% include "ebook_exporter/TG/image_snippet.html" with heading_level="h1" %}
+    {% include "ebook_exporter/TG/image_snippet.html" with heading_level="h2" %}
   {% endwith %}
 
     {% for sub in section.subsections %}

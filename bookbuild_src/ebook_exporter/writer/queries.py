@@ -1,5 +1,4 @@
-from collections import OrderedDict
-from ..models import Book
+from ..models import Book, Subsection
 from ..model_enum import ChapterTypeChoices
 
 
@@ -92,16 +91,6 @@ class BookQueries:
         return chapter.section_set.all().count() > 0
 
     @staticmethod
-    def build_chapter_section_ordered_dict(chapters):
-        """I think this is wrong but moving it over as-is
-        """
-        chapters_od = OrderedDict()
-        for c in chapters:
-            if c.section_set.all().count() > 0:
-                for section in c.section_set.all():
-                    chapters_od.update(
-                        {c: list(section.subsection_set.all().order_by("order"))}
-                    )
-            else:
-                chapters_od.update({c: []})
-        return chapters_od
+    def get_subsection_for_chapters(chapters):
+        return Subsection.objects.filter(section__chapter__in=chapters).order_by("title")
+

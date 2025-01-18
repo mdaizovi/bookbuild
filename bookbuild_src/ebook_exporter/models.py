@@ -558,6 +558,15 @@ class Subsection(models.Model):
         return "%s" % (self.title)
 
     @property
+    def anchor_id(self):
+        return f"subsection-{self.pk}"
+    
+    @property
+    def internal_url(self):
+        chapter_url = self.section.chapter.chapter_url
+        return f"{chapter_url}#{self.anchor_id}"
+
+    @property
     def title_lower_snake(self):
         # snake case
         # & is a problem
