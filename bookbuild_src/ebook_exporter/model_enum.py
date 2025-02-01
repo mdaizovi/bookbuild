@@ -56,6 +56,7 @@ class ChapterTypeChoices:
         (CHAPTER_CH, "Chapter"),
     ]
 
+
 class FooterDetailChoices:
     BTS = "BTS"
     MRT = "MRT"
@@ -71,4 +72,3 @@ class FooterDetailChoices:
         (ADDRESS, "Address"),
         (GOOGLE_MAPS, "Google Maps"),
     )
-    

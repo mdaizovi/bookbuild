@@ -16,7 +16,7 @@ from .model_enum import (
     LanguageTypeChoices,
     MediaTypeChoices,
     ChapterTypeChoices,
-    FooterDetailChoices
+    FooterDetailChoices,
 )
 from django.db import transaction  # Import transaction for atomic operations
 
@@ -604,41 +604,46 @@ class Subsection(models.Model):
     def parse_footer_text(self):
         if not self.footer_text:
             return
-        
+
         # Use regex to find the URL and the text for the address
-        address_pattern = r'<a href="([^"]+)">([^<]+)</a>'
+        address_pattern = r'<a\s+href\s*=\s*["\'](https?://[^"\']+)["\']\s*>(.*?)<\/a>'
         address_matches = re.findall(address_pattern, self.footer_text)
 
         # Create FooterTransport for the address
         for url, address in address_matches:
-            address_type = 'A'  # Default type for address
+            address_type = "A"  # Default type for address
             if "www.google.com/maps/" in url:
-                address_type = 'GM'  # Set type to GOOGLE_MAPS if URL matches
-
-            FooterDetail.objects.create(
-                subsection=self,
-                type=address_type,
-                text=address,
-                url=url
-            )
+                address_type = "GM"  # Set type to GOOGLE_MAPS if URL matches
+            # Check if the record already exists
+            if not FooterDetail.objects.filter(
+                subsection=self, type=address_type
+            ).exists():
+                FooterDetail.objects.create(
+                    subsection=self, type=address_type, text=address, url=url
+                )
 
         # Use regex to find transport types and their corresponding texts
-        transport_pattern = r'(\w+):\s*([^;]+)'
+        transport_mapping = {
+            "BTS": "BTS",
+            "MRT": "MRT",
+            "Kanalboot": "K",
+            "Flussboot": "F",
+        }
+        transport_keys = "|".join(transport_mapping.keys())  # Join keys with '|'
+        transport_pattern = (
+            rf"({transport_keys}):\s*([^;]+)"  # Use raw string for regex
+        )
         transport_matches = re.findall(transport_pattern, self.footer_text)
+        print(f"transport_matches: {transport_matches}")
 
         # Create FooterTransport for each transport type
-        transport_mapping = {
-            'BTS': 'BTS',
-            'MRT': 'MRT',
-            'Kanalboot': 'K',
-            'Flussboot': 'F'
-        }        
         for transport_type, text in transport_matches:
-            if transport_type in transport_mapping:
+            mapped_type = transport_mapping[transport_type]
+            if not FooterDetail.objects.filter(
+                subsection=self, type=mapped_type
+            ).exists():
                 FooterDetail.objects.create(
-                    subsection=self,
-                    transport_type=transport_mapping[transport_type],
-                    text=text.strip()
+                    subsection=self, type=mapped_type, text=text.strip()
                 )
 
     # ---------------------------------------------------------------------------
@@ -665,7 +670,6 @@ class Subsection(models.Model):
 #         image.save()
 #         self.img = image
 #         self.save()
-#         print("saved")
 #         if os.path.exists(imagename):
 #             os.remove(imagename)
 #             print("%s deleted" % imagename)
@@ -697,14 +701,16 @@ class Subsection(models.Model):
 
 
 class FooterDetail(models.Model):
-    
+
     subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE)
     type = models.CharField(
-        max_length=5, choices=FooterDetailChoices.CHOICES, default=FooterDetailChoices.BTS
+        max_length=5,
+        choices=FooterDetailChoices.CHOICES,
+        default=FooterDetailChoices.BTS,
     )
     text = models.CharField(max_length=200)
     mins = models.PositiveSmallIntegerField(null=True, blank=True)
     url = models.URLField(null=True, blank=True)
 
     def __str__(self):
-        return "%s" % (self.title)
+        return "%s" % (self.text)
