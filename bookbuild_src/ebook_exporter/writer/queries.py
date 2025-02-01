@@ -92,5 +92,6 @@ class BookQueries:
 
     @staticmethod
     def get_subsection_for_chapters(chapters):
-        return Subsection.objects.filter(section__chapter__in=chapters).order_by("title")
-
+        return Subsection.objects.filter(section__chapter__in=chapters).order_by(
+            "title"
+        )

@@ -11,7 +11,16 @@ from django_admin_listfilter_dropdown.filters import (
 # from django.utils.safestring import mark_safe
 from ordered_model.admin import OrderedModelAdmin
 
-from .models import Author, Book, Chapter, Image, StaticFile, Section, Subsection
+from .models import (
+    Author,
+    Book,
+    Chapter,
+    Image,
+    StaticFile,
+    Section,
+    Subsection,
+    FooterTransport,
+)
 
 # ===============================================================================
 class ImageAdmin(admin.ModelAdmin):
@@ -37,6 +46,13 @@ class SectionAdmin(admin.ModelAdmin):
 
 
 # ===============================================================================
+# Create an inline admin class for FooterTransport
+class FooterTransportInline(admin.TabularInline):  # or admin.StackedInline
+    model = FooterTransport
+    extra = 1  # Number of empty forms to display
+
+
+# ===============================================================================
 class SubsectionAdmin(admin.ModelAdmin):
     search_fields = ("title", "priority")
     list_display = ("title", "section", "priority", "order")
@@ -44,6 +60,7 @@ class SubsectionAdmin(admin.ModelAdmin):
         ("section", RelatedDropdownFilter),
         ("section__chapter", RelatedDropdownFilter),
     )
+    inlines = [FooterTransportInline]  # Add the inline class here
 
 
 # ===============================================================================

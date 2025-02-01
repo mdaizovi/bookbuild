@@ -544,6 +544,13 @@ class Subsection(models.Model):
     main_text = models.TextField(null=True, blank=True)
     footer_text = models.TextField(null=True, blank=True)
 
+    # footer_bts_text = models.TextField(null=True, blank=True)
+    # footer_mrt_text = models.TextField(null=True, blank=True)
+    # footer_kanalboot_text = models.TextField(null=True, blank=True)
+    # footer_flussboot_text = models.TextField(null=True, blank=True)
+    # footer_address_text = models.TextField(null=True, blank=True)
+    # footer_address_link = models.URLField(null=True, blank=True)
+
     # Image. Can be blank/null, but I prefer not to.
     # img = models.ForeignKey(Image, null=True, blank=True, on_delete=models.SET_NULL)
     # img_lower = models.ForeignKey(
@@ -560,7 +567,7 @@ class Subsection(models.Model):
     @property
     def anchor_id(self):
         return f"subsection-{self.pk}"
-    
+
     @property
     def internal_url(self):
         chapter_url = self.section.chapter.chapter_url
@@ -645,3 +652,27 @@ class Subsection(models.Model):
 #         section_url = str((self.section.chapter.src)).replace("OEBPS/", "")
 #         recipe_url = section_url + ("#subsection-" + str(self.pk))
 #         return recipe_url
+
+
+class FooterTransport(models.Model):
+    BTS = "BTS"
+    MRT = "MRT"
+    KANAL = "K"
+    FLUSS = "F"
+    TRANSPORT_CHOICES = (
+        (BTS, "BTS"),
+        (MRT, "MRT"),
+        (KANAL, "Kanalboot"),
+        (FLUSS, "Flussboot"),
+    )
+
+    subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE)
+    transport_type = models.CharField(
+        max_length=5, choices=TRANSPORT_CHOICES, default=BTS
+    )
+    text = models.CharField(max_length=200)
+    mins = models.PositiveSmallIntegerField(null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return "%s" % (self.title)

@@ -72,9 +72,7 @@ class EbookWriter:
             # html_destination = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", chapter.src.decode('utf-8')
         elif component_type == "contents":
             chapters_all = BookQueries.get_content_chapters(book=self.book)
-            items = BookQueries.get_subsection_for_chapters(
-                chapters=chapters_all
-            )
+            items = BookQueries.get_subsection_for_chapters(chapters=chapters_all)
             ctx.update({"items": items})
 
             contents_chapter = BookQueries.get_contents_chapter(book=self.book)
@@ -155,7 +153,7 @@ class EbookWriter:
         for c in BookQueries.get_chapters_except_contents(book=self.book):
             self.writeComponent(component_type="chapter", chapter=c)
         if self.book.book_type in ["CK", "TG"]:
-            contents_chapter =  BookQueries.get_contents_chapter(book=self.book)
+            contents_chapter = BookQueries.get_contents_chapter(book=self.book)
             if contents_chapter is not None:
                 self.writeComponent("contents")
 
@@ -180,7 +178,9 @@ class EbookWriter:
             self.CSS_SNIPPET += (
                 '<link href="%s" rel="stylesheet" type="text/css"/>' % f.relative_url
             )
-        self.CSS_SNIPPET += '<link href="css/stylesheet_custom.css" rel="stylesheet" type="text/css"/>'    
+        self.CSS_SNIPPET += (
+            '<link href="css/stylesheet_custom.css" rel="stylesheet" type="text/css"/>'
+        )
 
         self.get_assets = (
             get_assets  # whether or not to download images, css, etc from aws
