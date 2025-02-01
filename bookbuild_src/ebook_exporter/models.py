@@ -604,7 +604,7 @@ class Subsection(models.Model):
     def parse_footer_text(self):
         if not self.footer_text:
             return
-
+        
         # Use regex to find the URL and the text for the address
         address_pattern = r'<a\s+href\s*=\s*["\'](https?://[^"\']+)["\']\s*>(.*?)<\/a>'
         address_matches = re.findall(address_pattern, self.footer_text)
@@ -630,11 +630,9 @@ class Subsection(models.Model):
             "Flussboot": "F",
         }
         transport_keys = "|".join(transport_mapping.keys())  # Join keys with '|'
-        transport_pattern = (
-            rf"({transport_keys}):\s*([^;]+)"  # Use raw string for regex
-        )
+        # Updated regex pattern to stop at '\r' or any other delimiter
+        transport_pattern = rf"({transport_keys}):\s*([^;\r\n]+)"  # Use raw string for regex
         transport_matches = re.findall(transport_pattern, self.footer_text)
-        print(f"transport_matches: {transport_matches}")
 
         # Create FooterTransport for each transport type
         for transport_type, text in transport_matches:
@@ -645,6 +643,12 @@ class Subsection(models.Model):
                 FooterDetail.objects.create(
                     subsection=self, type=mapped_type, text=text.strip()
                 )
+        if len(transport_matches) > 0 or len(address_matches) > 0:
+            print(f"{self} {self.pk}")
+            if len(transport_matches) > 0:
+                print(f"transport_matches: {transport_matches}")
+            if len(address_matches) > 0:
+                print("address_matches:", address_matches)
 
     # ---------------------------------------------------------------------------
     class Meta:
