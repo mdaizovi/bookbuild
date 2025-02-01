@@ -55,3 +55,20 @@ class ChapterTypeChoices:
         (CHAPTER_C, "Contents"),
         (CHAPTER_CH, "Chapter"),
     ]
+
+class FooterDetailChoices:
+    BTS = "BTS"
+    MRT = "MRT"
+    KANAL = "K"
+    FLUSS = "F"
+    ADDRESS = "A"
+    GOOGLE_MAPS = "GM"
+    CHOICES = (
+        (BTS, "BTS"),
+        (MRT, "MRT"),
+        (KANAL, "Kanalboot"),
+        (FLUSS, "Flussboot"),
+        (ADDRESS, "Address"),
+        (GOOGLE_MAPS, "Google Maps"),
+    )
+    

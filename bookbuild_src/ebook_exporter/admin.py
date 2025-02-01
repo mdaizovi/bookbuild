@@ -19,7 +19,7 @@ from .models import (
     StaticFile,
     Section,
     Subsection,
-    FooterTransport,
+    FooterDetail,
 )
 
 # ===============================================================================
@@ -46,9 +46,8 @@ class SectionAdmin(admin.ModelAdmin):
 
 
 # ===============================================================================
-# Create an inline admin class for FooterTransport
-class FooterTransportInline(admin.TabularInline):  # or admin.StackedInline
-    model = FooterTransport
+class FooterDetailInline(admin.TabularInline):  # or admin.StackedInline
+    model = FooterDetail
     extra = 1  # Number of empty forms to display
 
 
@@ -60,7 +59,7 @@ class SubsectionAdmin(admin.ModelAdmin):
         ("section", RelatedDropdownFilter),
         ("section__chapter", RelatedDropdownFilter),
     )
-    inlines = [FooterTransportInline]  # Add the inline class here
+    inlines = [FooterDetailInline]  # Add the inline class here
 
 
 # ===============================================================================

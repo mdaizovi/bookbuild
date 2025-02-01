@@ -16,7 +16,9 @@ from .model_enum import (
     LanguageTypeChoices,
     MediaTypeChoices,
     ChapterTypeChoices,
+    FooterDetailChoices
 )
+from django.db import transaction  # Import transaction for atomic operations
 
 # MTDICT = [
 #     ("jpg", "image/jpeg"),
@@ -599,6 +601,46 @@ class Subsection(models.Model):
         except (FileNotFoundError, IndexError):
             return []
 
+    def parse_footer_text(self):
+        if not self.footer_text:
+            return
+        
+        # Use regex to find the URL and the text for the address
+        address_pattern = r'<a href="([^"]+)">([^<]+)</a>'
+        address_matches = re.findall(address_pattern, self.footer_text)
+
+        # Create FooterTransport for the address
+        for url, address in address_matches:
+            address_type = 'A'  # Default type for address
+            if "www.google.com/maps/" in url:
+                address_type = 'GM'  # Set type to GOOGLE_MAPS if URL matches
+
+            FooterDetail.objects.create(
+                subsection=self,
+                type=address_type,
+                text=address,
+                url=url
+            )
+
+        # Use regex to find transport types and their corresponding texts
+        transport_pattern = r'(\w+):\s*([^;]+)'
+        transport_matches = re.findall(transport_pattern, self.footer_text)
+
+        # Create FooterTransport for each transport type
+        transport_mapping = {
+            'BTS': 'BTS',
+            'MRT': 'MRT',
+            'Kanalboot': 'K',
+            'Flussboot': 'F'
+        }        
+        for transport_type, text in transport_matches:
+            if transport_type in transport_mapping:
+                FooterDetail.objects.create(
+                    subsection=self,
+                    transport_type=transport_mapping[transport_type],
+                    text=text.strip()
+                )
+
     # ---------------------------------------------------------------------------
     class Meta:
         ordering = [
@@ -654,21 +696,11 @@ class Subsection(models.Model):
 #         return recipe_url
 
 
-class FooterTransport(models.Model):
-    BTS = "BTS"
-    MRT = "MRT"
-    KANAL = "K"
-    FLUSS = "F"
-    TRANSPORT_CHOICES = (
-        (BTS, "BTS"),
-        (MRT, "MRT"),
-        (KANAL, "Kanalboot"),
-        (FLUSS, "Flussboot"),
-    )
-
+class FooterDetail(models.Model):
+    
     subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE)
-    transport_type = models.CharField(
-        max_length=5, choices=TRANSPORT_CHOICES, default=BTS
+    type = models.CharField(
+        max_length=5, choices=FooterDetailChoices.CHOICES, default=FooterDetailChoices.BTS
     )
     text = models.CharField(max_length=200)
     mins = models.PositiveSmallIntegerField(null=True, blank=True)
