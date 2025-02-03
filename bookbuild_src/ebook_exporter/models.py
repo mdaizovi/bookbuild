@@ -612,7 +612,6 @@ class Subsection(models.Model):
             if choice[0]
             not in [FooterDetailChoices.WEB, FooterDetailChoices.GOOGLE_MAPS]
         }
-        print(f"transport_mapping: {transport_mapping}")
 
         # Use regex to find the URL and the text for the address
         address_pattern = r'<a\s+href\s*=\s*["\'](https?://[^"\']+)["\']\s*>(.*?)<\/a>'
