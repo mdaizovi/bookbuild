@@ -604,16 +604,26 @@ class Subsection(models.Model):
     def parse_footer_text(self):
         if not self.footer_text:
             return
-        
+
+        # Create transport_mapping dynamically from FooterDetailChoices
+        transport_mapping = {
+            choice[0]: choice[1]
+            for choice in FooterDetailChoices.CHOICES
+            if choice[0]
+            not in [FooterDetailChoices.WEB, FooterDetailChoices.GOOGLE_MAPS]
+        }
+
         # Use regex to find the URL and the text for the address
         address_pattern = r'<a\s+href\s*=\s*["\'](https?://[^"\']+)["\']\s*>(.*?)<\/a>'
         address_matches = re.findall(address_pattern, self.footer_text)
 
         # Create FooterTransport for the address
         for url, address in address_matches:
-            address_type = "A"  # Default type for address
+            address_type = FooterDetailChoices.WEB  # Default type for address
             if "www.google.com/maps/" in url:
-                address_type = "GM"  # Set type to GOOGLE_MAPS if URL matches
+                address_type = (
+                    FooterDetailChoices.GOOGLE_MAPS
+                )  # Set type to GOOGLE_MAPS if URL matches
             # Check if the record already exists
             if not FooterDetail.objects.filter(
                 subsection=self, type=address_type
@@ -623,16 +633,14 @@ class Subsection(models.Model):
                 )
 
         # Use regex to find transport types and their corresponding texts
-        transport_mapping = {
-            "BTS": "BTS",
-            "MRT": "MRT",
-            "Kanalboot": "K",
-            "Flussboot": "F",
-        }
         transport_keys = "|".join(transport_mapping.keys())  # Join keys with '|'
-        # Updated regex pattern to stop at '\r' or any other delimiter
-        transport_pattern = rf"({transport_keys}):\s*([^;\r\n]+)"  # Use raw string for regex
-        transport_matches = re.findall(transport_pattern, self.footer_text)
+        # Updated regex pattern to be case insensitive
+        transport_pattern = (
+            rf"({transport_keys}):\s*([^;\r\n]+)"  # Use raw string for regex
+        )
+        transport_matches = re.findall(
+            transport_pattern, self.footer_text, re.IGNORECASE
+        )
 
         # Create FooterTransport for each transport type
         for transport_type, text in transport_matches:
@@ -708,7 +716,7 @@ class FooterDetail(models.Model):
 
     subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE)
     type = models.CharField(
-        max_length=5,
+        max_length=7,
         choices=FooterDetailChoices.CHOICES,
         default=FooterDetailChoices.BTS,
     )

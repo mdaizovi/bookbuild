@@ -59,16 +59,34 @@ class ChapterTypeChoices:
 
 class FooterDetailChoices:
     BTS = "BTS"
+    BTS_GOLD = "BTSG"
+    ARL = "ARL"
+    BRT = "BRT"
     MRT = "MRT"
+    MRT_PINK = "MRTPK"
+    MRT_PURPLE = "MRTPPL"
+    MRT_YELLOW = "MRTYLW"
+    SRT = "SRT"
+    SRT_LIGHT_RED = "SRTLR"
+    SRT_DARK_RED = "SRTDR"
     KANAL = "K"
     FLUSS = "F"
-    ADDRESS = "A"
+    WEB = "W"
     GOOGLE_MAPS = "GM"
     CHOICES = (
         (BTS, "BTS"),
+        (BTS_GOLD, "BTS Gold"),
+        (ARL, "ARL"),
+        (BRT, "BRT"),
         (MRT, "MRT"),
+        (MRT_PINK, "MRT Pink"),
+        (MRT_PURPLE, "MRT Purple"),
+        (MRT_YELLOW, "MRT Yellow"),
+        (SRT, "SRT"),
+        (SRT_LIGHT_RED, "SRT Light Red"),
+        (SRT_DARK_RED, "SRT Dark Red"),
         (KANAL, "Kanalboot"),
         (FLUSS, "Flussboot"),
-        (ADDRESS, "Address"),
+        (WEB, "Website"),
         (GOOGLE_MAPS, "Google Maps"),
     )
