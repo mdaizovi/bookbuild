@@ -607,16 +607,16 @@ class Subsection(models.Model):
 
         # Create transport_mapping dynamically from FooterDetailChoices
         transport_mapping = {
-            choice[0]: choice[1]
+            choice[1].upper(): choice[0]
             for choice in FooterDetailChoices.CHOICES
             if choice[0]
             not in [FooterDetailChoices.WEB, FooterDetailChoices.GOOGLE_MAPS]
         }
+        print(f"transport_mapping: {transport_mapping}")
 
         # Use regex to find the URL and the text for the address
         address_pattern = r'<a\s+href\s*=\s*["\'](https?://[^"\']+)["\']\s*>(.*?)<\/a>'
         address_matches = re.findall(address_pattern, self.footer_text)
-
         # Create FooterTransport for the address
         for url, address in address_matches:
             address_type = FooterDetailChoices.WEB  # Default type for address
@@ -644,7 +644,7 @@ class Subsection(models.Model):
 
         # Create FooterTransport for each transport type
         for transport_type, text in transport_matches:
-            mapped_type = transport_mapping[transport_type]
+            mapped_type = transport_mapping[transport_type.upper()]
             if not FooterDetail.objects.filter(
                 subsection=self, type=mapped_type
             ).exists():
