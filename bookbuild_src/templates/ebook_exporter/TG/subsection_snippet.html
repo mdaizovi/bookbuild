@@ -1,7 +1,23 @@
 <span class="anchor" id="{{component.anchor_id}}"></span>
 {% include "ebook_exporter/TG/image_snippet.html" with heading_level="h3" %}
-  <p style="font-style: italic;">
+  <!-- <p style="font-style: italic;">
     {% with text=component.footer_text|safe %}
       {{text|linebreaks}}
     {% endwith %}
-  </p>   
+  </p>    -->
+<div>
+  {% for f in component.footer_details.all %}
+  <span>
+    {% if f.icon_img_png %}
+      <img src="{{ f.icon_img_png }}" style = "height: 1em;"/>
+    {% endif %}
+
+    {% if f.url %}
+      <a href="{{f.url}}">{{ f.text }}</a>
+    {% else %}
+      {{ f.text }}
+    {% endif %}
+  </span>
+  <br>
+  {% endfor %}
+</div>

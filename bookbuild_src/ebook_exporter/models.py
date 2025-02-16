@@ -713,7 +713,7 @@ class Subsection(models.Model):
 
 class FooterDetail(models.Model):
 
-    subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE)
+    subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE, related_name="footer_details")
     type = models.CharField(
         max_length=7,
         choices=FooterDetailChoices.CHOICES,
@@ -725,3 +725,9 @@ class FooterDetail(models.Model):
 
     def __str__(self):
         return "%s" % (self.text)
+    
+    @property
+    def icon_img_png(self):
+        # if self.type not in [FooterDetailChoices.WEB, FooterDetailChoices.GOOGLE_MAPS]:
+        #     return f"images/icons/png/{self.type}.png"
+        return f"images/icons/png/{self.type}.png"

@@ -71,6 +71,7 @@ class FooterDetailChoices:
     SRT_DARK_RED = "SRTDR"
     KANAL = "K"
     FLUSS = "F"
+    RAILWAY = "RAIL"
     WEB = "W"
     GOOGLE_MAPS = "GM"
     CHOICES = (
