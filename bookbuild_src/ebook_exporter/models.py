@@ -130,13 +130,15 @@ def create_translation_instance(instance, language="de"):
     continent_ct = ContentType.objects.get_for_model(type(instance))
     translatable_fields = instance._get_translatable_fields_names()
     for f in translatable_fields:
-        Translation.objects.create(
-            content_type=continent_ct,
-            object_id=instance.pk,
-            field=f,
-            language=language,
-            text=getattr(instance, f),
-        )
+        base_content = getattr(instance, f)
+        if base_content is not None:
+            Translation.objects.create(
+                content_type=continent_ct,
+                object_id=instance.pk,
+                field=f,
+                language=language,
+                text=getattr(instance, f),
+            )
 
 
 # ===============================================================================
