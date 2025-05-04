@@ -118,6 +118,26 @@ def standardize_text_breaks(text):
     text = text.replace(line_break, line_break * 2)
     return text
 
+def create_translation_instance(instance, language="de"):
+    """
+    Take the source instance and copies text from all translatable fields fo that instance, to have a base for replacing.
+    Example: Book obj with title can be translated. if language is 'sp' we will have an entry for sp for the obj, 
+    but the actual test will be text will be the same as the origional object (until someone logs in to admin and changes it)
+    """
+    from django.contrib.contenttypes.models import ContentType
+    from translations.models import Translation
+
+    continent_ct = ContentType.objects.get_for_model(type(instance))
+    translatable_fields = instance._get_translatable_fields_names()
+    for f in translatable_fields:
+        Translation.objects.create(
+            content_type=continent_ct,
+            object_id=instance.pk,
+            field=f,
+            language=language,
+            text=getattr(instance, f),
+        )
+
 
 # ===============================================================================
 class Person(models.Model):
