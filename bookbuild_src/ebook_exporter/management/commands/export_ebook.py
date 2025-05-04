@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 
 from ...models import Book
 from ...writer.ebook_writer import EbookWriter
+from django.conf import settings
 
 # python manage.py export_ebook --book 1
 # or BUT 555 tips does not have any aws buckets, get_assets does nothing
@@ -26,6 +27,10 @@ class Command(BaseCommand):
             "--verbose", action="store_true", help="Add if you want output on console",
         )
 
+        parser.add_argument(
+            "--language", type=str, default=settings.LANGUAGE_CODE, help="Language to output the book in",
+        )
+
     def handle(self, *args, **options):
         kwargs = {}
 
@@ -47,7 +52,9 @@ class Command(BaseCommand):
         else:
             verbose = False
 
-        print("--Starting to export %s" % (book.title)) if verbose else None
-        writer = EbookWriter(book=book, get_assets=get_assets, verbose=verbose)
+        language = options["language"]
+
+        print("--Starting to export %s in %s" % (book.title, language)) if verbose else None
+        writer = EbookWriter(language=language, book=book, get_assets=get_assets, verbose=verbose)
         writer.writeBook()
         print("\n\n--Finished exporting %s" % (book.title)) if verbose else None

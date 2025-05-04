@@ -4,8 +4,8 @@ from ..model_enum import ChapterTypeChoices
 
 class BookQueries:
     @staticmethod
-    def get_book(pk=1):
-        return Book.objects.get(pk=pk)
+    def get_book(pk, language):
+        return Book.objects.translate(language).get(pk=pk)
 
     @staticmethod
     def get_all_images(book):

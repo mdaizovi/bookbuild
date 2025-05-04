@@ -19,7 +19,8 @@ from .model_enum import (
     FooterDetailChoices,
 )
 from django.db import transaction  # Import transaction for atomic operations
-
+from translations.models import Translatable
+from translations.querysets import TranslatableQuerySet
 # MTDICT = [
 #     ("jpg", "image/jpeg"),
 #     ("html", "application/xhtml+xml"),
@@ -268,7 +269,7 @@ class BookManager(models.Manager):
 
 
 # ===============================================================================
-class Book(models.Model):
+class Book(Translatable):
     """Should this be ABS or what?
     """
 
@@ -302,7 +303,13 @@ class Book(models.Model):
     )
     description = models.TextField(null=True, blank=True)
 
-    objects = BookManager()
+    # objects = BookManager()
+    # NOTE have to do this if you want to keep your custom manager
+    objects = BookManager.from_queryset(TranslatableQuerySet)()
+  
+
+    class TranslatableMeta:
+        fields = ['title', 'description']
 
     # ---------------------------------------------------------------------------
 
@@ -361,7 +368,7 @@ class Book(models.Model):
 # Categories only matter because of section. blabs should have section.
 
 # ===============================================================================
-class Chapter(models.Model):
+class Chapter(Translatable):
     """Book components, more generally, but often specfically in form of chapters.
         Standard order will be:
         Cover, Copyright, and then maybe Chapter 1, or Introduction, so on and so forth
@@ -399,6 +406,9 @@ class Chapter(models.Model):
 
     bodyText = models.TextField(null=True, blank=True)
 
+    class TranslatableMeta:
+        fields = ['title', 'intro','bodyText']
+
     # ---------------------------------------------------------------------------
 
     def __str__(self):
@@ -420,7 +430,11 @@ class Chapter(models.Model):
     def title_lower_snake(self):
         # snake case
         # & is a problem
-        return self.title.lower().replace(" ", "_").replace("&", "and")
+        #title = self.title
+        # Have to use .translations.content_object to get origional title
+        t =  self.translations.first()
+        title = t.content_object.title
+        return title.lower().replace(" ", "_").replace("&", "and")
 
     @property
     def img_url(self):
@@ -483,7 +497,7 @@ class Chapter(models.Model):
 
 # Category / Section becomes this
 # # ===============================================================================
-class Section(models.Model):
+class Section(Translatable):
 
     title = models.CharField(max_length=200)
     order = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -505,7 +519,11 @@ class Section(models.Model):
     def title_lower_snake(self):
         # snake case
         # & is a problem
-        return self.title.lower().replace(" ", "_").replace("&", "and")
+        #title = self.title
+        # Have to use .translations.content_object to get origional title
+        t =  self.translations.first()
+        title = t.content_object.title
+        return title.lower().replace(" ", "_").replace("&", "and")
 
     @property
     def img_url(self):
@@ -533,9 +551,11 @@ class Section(models.Model):
             "order",
         ]
 
+    class TranslatableMeta:
+        fields = ['title', 'main_text']
 
 # # ===============================================================================
-class Subsection(models.Model):
+class Subsection(Translatable):
     """Formerly Blob"""
 
     title = models.CharField(max_length=200, blank=True)
@@ -566,6 +586,10 @@ class Subsection(models.Model):
     def __str__(self):
         return "%s" % (self.title)
 
+
+    class TranslatableMeta:
+        fields = ['title', 'category_text','main_text','footer_text']
+
     @property
     def anchor_id(self):
         return f"subsection-{self.pk}"
@@ -579,7 +603,11 @@ class Subsection(models.Model):
     def title_lower_snake(self):
         # snake case
         # & is a problem
-        return self.title.lower().replace(" ", "_").replace("&", "and")
+        #title = self.title
+        # Have to use .translations.content_object to get origional title
+        t =  self.translations.first()
+        title = t.content_object.title
+        return title.lower().replace(" ", "_").replace("&", "and")
 
     @property
     def img_url(self):
@@ -665,7 +693,6 @@ class Subsection(models.Model):
             "order",
         ]
 
-
 #     # ---------------------------------------------------------------------------
 #     def download_image(self):
 #         if not self.recipe_img_url:
@@ -711,7 +738,7 @@ class Subsection(models.Model):
 #         return recipe_url
 
 
-class FooterDetail(models.Model):
+class FooterDetail(Translatable):
 
     subsection = models.ForeignKey(Subsection, on_delete=models.CASCADE, related_name="footer_details")
     type = models.CharField(
@@ -722,6 +749,9 @@ class FooterDetail(models.Model):
     text = models.CharField(max_length=200)
     mins = models.PositiveSmallIntegerField(null=True, blank=True)
     url = models.URLField(null=True, blank=True)
+
+    # class TranslatableMeta:
+    #     fields = ['title', 'description']
 
     def __str__(self):
         return "%s" % (self.text)

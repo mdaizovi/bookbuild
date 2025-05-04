@@ -168,10 +168,9 @@ class EbookWriter:
 
     # Prob will nevr need to edit or look at this crap below.
     # -------------------------------------------------------------------------------
-    def __init__(self, book=None, get_assets=False, verbose=False):
-        if not book:
-            book = BookQueries.get_book(pk=1)
-        self.book = book
+    def __init__(self, language, book=None, get_assets=False, verbose=False):
+        self.language = language
+        self.book = BookQueries.get_book(pk=book or 1,language=language)
 
         self.CSS_SNIPPET = ""
         for f in BookQueries.get_all_files(book=self.book):
@@ -205,9 +204,9 @@ class EbookWriter:
             "creator": self.book.author_string,
             # "publisher": "Team Kaffeeklatsch",
             "date": time.strftime("%Y-%m-%d"),
-            "language": self.book.language or "en",
+            "language": self.language,
             "subject": self.book.subject or "",
-            "description": "",
+            "description": self.book.description or "",
             "format": "0 pages",
             "type": "Text",
             "rights": "All rights reserved",
