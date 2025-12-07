@@ -170,7 +170,7 @@ class EbookWriter:
     # -------------------------------------------------------------------------------
     def __init__(self, language, book=None, get_assets=False, verbose=False):
         self.language = language
-        self.book = BookQueries.get_book(pk=book or 1,language=language)
+        self.book = BookQueries.get_book(pk=book.id or 1,language=language)
 
         self.CSS_SNIPPET = ""
         for f in BookQueries.get_all_files(book=self.book):

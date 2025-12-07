@@ -71,3 +71,8 @@ and then
 `git checkout main`
 
 `git pull`
+
+### To output the book locally
+(from `bookbuild_src` directory, in the virtual environment)
+
+`python manage.py export_ebook --book 1 --verbose`
