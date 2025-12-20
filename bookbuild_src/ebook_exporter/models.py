@@ -458,14 +458,19 @@ class Chapter(Translatable):
         title = t.content_object.title
         return title.lower().replace(" ", "_").replace("&", "and")
 
-    @property
-    def img_url(self):
-        base_name_start = f"{self.title_lower_snake}_title__"
-        base_name_end = ".jpg"
+    def _get_img_url(self, name_suffix="", extension=".jpg", case_sensitive=False):
+        """Helper method to get image URL based on pattern matching.
+        
+        Args:
+            name_suffix: Suffix to add after title_lower_snake (e.g., "_title", "_map", or "")
+            extension: File extension (e.g., ".jpg", ".png")
+            case_sensitive: Whether pattern matching should be case sensitive
+        """
+        base_name_start = f"{self.title_lower_snake}{name_suffix}__"
         pattern = re.compile(
-            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
+            f"{re.escape(base_name_start)}.*{re.escape(extension)}",
+            re.IGNORECASE if not case_sensitive else 0
         )
-
         image_dir = f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
         try:
             img_pattern_files = os.listdir(image_dir)
@@ -474,27 +479,17 @@ class Chapter(Translatable):
                 for filename in img_pattern_files
                 if pattern.match(filename)
             ]
-            return matching_files[0]
+            return matching_files[0] if matching_files else []
         except (FileNotFoundError, IndexError):
             return []
 
     @property
+    def img_url(self):
+        return self._get_img_url(name_suffix="_title", extension=".jpg")
+
+    @property
     def map_img_url(self):
-        base_name_start = f"{self.title_lower_snake}_map__"
-        base_name_end = ".png"
-        pattern = re.compile(
-            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}"
-        )  # Construct the regex pattern
-        image_dir = f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
-        try:
-            img_pattern_files = os.listdir(image_dir)
-            matching_files = [f"images{os.sep}{self.title_lower_snake}{os.sep}{filename}"
-                for filename in img_pattern_files
-                if pattern.match(filename)
-            ]        
-            return matching_files[0]
-        except (FileNotFoundError, IndexError):
-            return []
+        return self._get_img_url(name_suffix="_map", extension=".png")
 
     # ---------------------------------------------------------------------------
     def save(self, *args, **kwargs):
@@ -544,12 +539,18 @@ class Section(Translatable):
         title = t.content_object.title
         return title.lower().replace(" ", "_").replace("&", "and")
 
-    @property
-    def img_url(self):
-        base_name_start = f"{self.title_lower_snake}__"
-        base_name_end = ".jpg"
+    def _get_img_url(self, name_suffix="", extension=".jpg", case_sensitive=False):
+        """Helper method to get image URL based on pattern matching.
+        
+        Args:
+            name_suffix: Suffix to add after title_lower_snake (e.g., "_title", "_map", or "")
+            extension: File extension (e.g., ".jpg", ".png")
+            case_sensitive: Whether pattern matching should be case sensitive
+        """
+        base_name_start = f"{self.title_lower_snake}{name_suffix}__"
         pattern = re.compile(
-            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
+            f"{re.escape(base_name_start)}.*{re.escape(extension)}",
+            re.IGNORECASE if not case_sensitive else 0
         )
         image_dir = f"{settings.IMG_DIR}{os.sep}{self.chapter.title_lower_snake}"
         try:
@@ -559,9 +560,13 @@ class Section(Translatable):
                 for filename in img_pattern_files
                 if pattern.match(filename)
             ]
-            return matching_files[0]
+            return matching_files[0] if matching_files else []
         except (FileNotFoundError, IndexError):
             return []
+
+    @property
+    def img_url(self):
+        return self._get_img_url(name_suffix="", extension=".jpg")
 
     # ---------------------------------------------------------------------------
     class Meta:
@@ -628,26 +633,34 @@ class Subsection(Translatable):
         title = t.content_object.title
         return title.lower().replace(" ", "_").replace("&", "and")
 
-    @property
-    def img_url(self):
-        base_name_start = f"{self.title_lower_snake}__"
-        base_name_end = ".jpg"
+    def _get_img_url(self, name_suffix="", extension=".jpg", case_sensitive=False):
+        """Helper method to get image URL based on pattern matching.
+        
+        Args:
+            name_suffix: Suffix to add after title_lower_snake (e.g., "_title", "_map", or "")
+            extension: File extension (e.g., ".jpg", ".png")
+            case_sensitive: Whether pattern matching should be case sensitive
+        """
+        base_name_start = f"{self.title_lower_snake}{name_suffix}__"
         pattern = re.compile(
-            f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
+            f"{re.escape(base_name_start)}.*{re.escape(extension)}",
+            re.IGNORECASE if not case_sensitive else 0
         )
         image_dir = f"{settings.IMG_DIR}{os.sep}{self.section.chapter.title_lower_snake}"
         try:
-            img_pattern_files = os.listdir(
-                image_dir
-            )
+            img_pattern_files = os.listdir(image_dir)
             matching_files = [
                 f"images{os.sep}{self.section.chapter.title_lower_snake}{os.sep}{filename}"
                 for filename in img_pattern_files
                 if pattern.match(filename)
             ]
-            return matching_files[0]
+            return matching_files[0] if matching_files else []
         except (FileNotFoundError, IndexError):
             return []
+
+    @property
+    def img_url(self):
+        return self._get_img_url(name_suffix="", extension=".jpg")
 
     def parse_footer_text(self):
         if not self.footer_text:

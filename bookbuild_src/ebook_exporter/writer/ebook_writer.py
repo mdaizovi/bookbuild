@@ -280,7 +280,6 @@ class EbookWriter:
                     + media_type
                     + "'/>"
                 )
-        print(f"opf_str with pics:\n{opf_str}") if self.verbose else None
 
         if self.book.cover:
             cover_filename = f"media{os.sep}" + self.book.cover.get_file_name()
