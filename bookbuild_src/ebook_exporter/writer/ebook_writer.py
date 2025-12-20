@@ -255,13 +255,24 @@ class EbookWriter:
         }.items():
             this_index = 0
             this_dir = os.path.join(self.BOOK_BASE_DIR, "Add2Epub", "OEBPS", dirname)
-            for f in os.listdir(this_dir):
+            
+            # Recursively walk the directory to get all files, preserving nested paths
+            files_to_process = []
+            for root, dirs, files in os.walk(this_dir):
+                for f in files:
+                    # Get relative path from this_dir to the file
+                    rel_path = os.path.relpath(os.path.join(root, f), this_dir)
+                    files_to_process.append(rel_path)
+            
+            for f in files_to_process:
                 this_index += 1
+                # Use forward slashes for the href path (EPUB standard)
+                href_path = f.replace(os.sep, '/')
                 opf_str += (
                     "<item href='OEBPS/"
                     + dirname
                     + "/"
-                    + f
+                    + href_path
                     + "' id = '"
                     + dirname[0]
                     + str(this_index)
@@ -269,6 +280,7 @@ class EbookWriter:
                     + media_type
                     + "'/>"
                 )
+        print(f"opf_str with pics:\n{opf_str}") if self.verbose else None
 
         if self.book.cover:
             cover_filename = f"media{os.sep}" + self.book.cover.get_file_name()

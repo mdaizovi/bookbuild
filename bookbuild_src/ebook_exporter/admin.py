@@ -42,13 +42,14 @@ class ImageAdmin(admin.ModelAdmin):
 
 # ===============================================================================
 class ChapterAdmin(TranslatableAdmin):
-    readonly_fields = ["chapter_url"]
+    readonly_fields = ["chapter_url", "img_url","map_img_url"]
     list_display = ("book", "title", "playOrder", "chapter_type")
     list_filter = (("book", RelatedDropdownFilter),)
     inlines = [TranslationInline]
 
 # ===============================================================================
 class SectionAdmin(TranslatableAdmin):
+    readonly_fields = ["img_url"]
     list_display = ("title", "chapter")
     list_filter = (("chapter", RelatedDropdownFilter),)
     inlines = [TranslationInline]
@@ -61,6 +62,7 @@ class FooterDetailInline(admin.TabularInline):  # or admin.StackedInline
 
 # ===============================================================================
 class SubsectionAdmin(TranslatableAdmin):
+    readonly_fields = ["img_url"]
     search_fields = ("title", "priority")
     list_display = ("title", "section", "priority", "order")
     list_filter = (

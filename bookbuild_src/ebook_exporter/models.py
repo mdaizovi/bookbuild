@@ -460,16 +460,15 @@ class Chapter(Translatable):
 
     @property
     def img_url(self):
-        # base_name_start = f"{self.title_lower_snake}_title__"
-        base_name_start = f"{self.title_lower_snake}__"
+        base_name_start = f"{self.title_lower_snake}_title__"
         base_name_end = ".jpg"
         pattern = re.compile(
             f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
         )
+
+        image_dir = f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
         try:
-            img_pattern_files = os.listdir(
-                f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
-            )
+            img_pattern_files = os.listdir(image_dir)
             matching_files = [
                 f"images{os.sep}{self.title_lower_snake}{os.sep}{filename}"
                 for filename in img_pattern_files
@@ -486,15 +485,13 @@ class Chapter(Translatable):
         pattern = re.compile(
             f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}"
         )  # Construct the regex pattern
+        image_dir = f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
         try:
-            img_pattern_files = os.listdir(
-                f"{settings.IMG_DIR}{os.sep}{self.title_lower_snake}"
-            )
-            matching_files = [
-                f"images{os.sep}{self.title_lower_snake}{os.sep}{filename}"
+            img_pattern_files = os.listdir(image_dir)
+            matching_files = [f"images{os.sep}{self.title_lower_snake}{os.sep}{filename}"
                 for filename in img_pattern_files
                 if pattern.match(filename)
-            ]
+            ]        
             return matching_files[0]
         except (FileNotFoundError, IndexError):
             return []
@@ -638,9 +635,10 @@ class Subsection(Translatable):
         pattern = re.compile(
             f"{re.escape(base_name_start)}.*{re.escape(base_name_end)}", re.IGNORECASE
         )
+        image_dir = f"{settings.IMG_DIR}{os.sep}{self.section.chapter.title_lower_snake}"
         try:
             img_pattern_files = os.listdir(
-                f"{settings.IMG_DIR}{os.sep}{self.section.chapter.title_lower_snake}"
+                image_dir
             )
             matching_files = [
                 f"images{os.sep}{self.section.chapter.title_lower_snake}{os.sep}{filename}"
