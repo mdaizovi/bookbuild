@@ -9,7 +9,7 @@
 
   {% if chapter.display_title %}
     <p class="Chapter-Title">
-      <span class="line">{{ chapter.title }}</span>
+      <span class="line">{{ chapter.title|safe }}</span>
     </p>  
     <hr>
   {% endif %}

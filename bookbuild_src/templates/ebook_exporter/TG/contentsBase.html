@@ -12,7 +12,7 @@
         <p class="content-recipe-title">
           {{ forloop.counter }}. 
           <a href="{{item.internal_url}}">
-            {{item.title|safe}} <span style="font-style: italic;">({{item.section.chapter.title}})</span>
+            {{item.title}} <span style="font-style: italic;">({{item.section.chapter.title}})</span>
           </a>
         </p>
     {% endfor %}

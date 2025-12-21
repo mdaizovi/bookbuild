@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import codecs
+import html
 import os
 import time
 
@@ -235,11 +236,12 @@ class EbookWriter:
             "type",
             "rights",
         ]:
+            value = str(self.metaDataDict.get(attr)) if self.metaDataDict.get(attr) else ""
             opf_str += (
                 "<dc:"
                 + attr
                 + ">"
-                + str(self.metaDataDict.get(attr))
+                + html.escape(value)
                 + "</dc:"
                 + attr
                 + ">"
@@ -312,12 +314,11 @@ class EbookWriter:
         opf_str += "</spine>"
 
         opf_str += "<guide><reference href='OEBPS/001_cover.html' title='cover' type='cover'/></guide></package>"
-
-        print("done writing everyhting?") if self.verbose else None
+        print("done assembling opf") if self.verbose else None
 
         with open(self.OPF_FILE, "w") as opf:
             opf.write(opf_str)
-
+        print("done writing opf") if self.verbose else None
     # -------------------------------------------------------------------------------
     def writeTOC(self):
         """Writes toc.ncx based on Chapter data from db
@@ -334,7 +335,7 @@ class EbookWriter:
         <meta name="dtb:maxPageNumber" content=""/> -->\
         </head>"""
 
-        toc_str += "<docTitle><text>" + self.book.title + "</text></docTitle>"
+        toc_str += "<docTitle><text>" + html.escape(self.book.title) + "</text></docTitle>"
         toc_str += "<navMap>"
 
         toc_str += "<navPoint id='navPoint-1' playOrder='1'>"
@@ -349,7 +350,7 @@ class EbookWriter:
                 + str(c.playOrder)
                 + "'>"
             )
-            toc_str += "<navLabel><text>" + str(c.title) + "</text></navLabel>"
+            toc_str += "<navLabel><text>" + html.escape(str(c.title)) + "</text></navLabel>"
             toc_str += "<content src='" + str(c.src) + "'/></navPoint>"
 
         toc_str += "</navMap></ncx>"
