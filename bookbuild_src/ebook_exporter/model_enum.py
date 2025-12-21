@@ -60,6 +60,8 @@ class ChapterTypeChoices:
 class FooterDetailChoices:
     BTS = "BTS"
     BTS_GOLD = "BTSG"
+    BTS_LIGHT_GREEN = "BTSLG"
+    BTS_DARK_GREEN = "BTSDG"
     ARL = "ARL"
     BRT = "BRT"
     MRT = "MRT"
@@ -77,6 +79,8 @@ class FooterDetailChoices:
     CHOICES = (
         (BTS, "BTS"),
         (BTS_GOLD, "BTS Gold"),
+        (BTS_LIGHT_GREEN, "BTS Light Green"),
+        (BTS_DARK_GREEN, "BTS Dark Green"),
         (ARL, "ARL"),
         (BRT, "BRT"),
         (MRT, "MRT"),

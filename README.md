@@ -73,6 +73,12 @@ and then
 `git pull`
 
 ### To output the book locally
+
+#### Image Conventions
+Remember, the images go in `bookbuild_src/ebook_exporter/Add2Epub/OEBPS/images/<CHAPTER_NAME>`, with the main chapter image in the format :
+`bookbuild_src/ebook_exporter/Add2Epub/OEBPS/images/<CHAPTER_NAME>/<CHAPTER_NAME>_title__<ANYTHING YOU WANT>.jpg` and the chapter map like `bookbuild_src/ebook_exporter/Add2Epub/OEBPS/images/<CHAPTER_NAME>/<CHAPTER_NAME>_map__.png`
+
+#### Output the book:
 (from `bookbuild_src` directory, in the virtual environment)
 
-`python manage.py export_ebook --book 1 --verbose`
+`python manage.py export_ebook --book 1 --verbose`  
